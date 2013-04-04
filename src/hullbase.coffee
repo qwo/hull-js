@@ -16,7 +16,15 @@ Hull.widget     = (widgetName, parent, widgetDef)->
   if typeof parent == 'string'
     [parentName, parentSrc] = parent.split '@'
     parentSrc ?= 'default'
-    define "__widget__$#{widgetName}@default", ["__widget__$#{parentName}@#{parentSrc}"], (p)-> _.extend {}, p, widgetDef
+    define "__widget__$#{widgetName}@default", ["__widget__$#{parentName}@#{parentSrc}"], (p)->
+      def =_.extend {}, p, widgetDef,
+        callSuper : ()->
+          args = Array.prototype.slice.call arguments
+          @applySuper args.shift(), args
+        applySuper : (name, args)->
+          p[name].apply(@, args)
+      def
+
   return widgetDef
 
 define ['lib/version', 'underscore'], (version, _) ->
