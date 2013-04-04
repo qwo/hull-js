@@ -18,11 +18,9 @@ Hull.widget     = (widgetName, parent, widgetDef)->
     parentSrc ?= 'default'
     define "__widget__$#{widgetName}@default", ["__widget__$#{parentName}@#{parentSrc}"], (p)->
       def =_.extend {}, p, widgetDef,
-        callSuper : ()->
+        super: (name)->
           args = Array.prototype.slice.call arguments
-          @applySuper args.shift(), args
-        applySuper : (name, args)->
-          p[name].apply(@, args)
+          p[args.shift()].apply(@, args)
       def
 
   return widgetDef
