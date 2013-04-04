@@ -66,7 +66,7 @@ define(function () {
 
     it("should return the augmented widget definition", function () {
       var widgetDef = {type: "myType"};
-      hullbase.widget("w1", widgetDef).should.equal(widgetDef);
+      hullbase.widget("w1", widgetDef).should.eql(widgetDef);
     });
 
     describe("define a widget with a function", function () {
