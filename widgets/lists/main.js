@@ -3,9 +3,13 @@
  *
  * In Hull, a list can contain any number of objects of any type. Lists can be heterogeneous, that is to say a list can contain achievements, people or comments altogether.
  *
+ * ## Examples
+ *
+ * <div data-hull-widget="lists@hull" data-hull-id="me"></div>
+ *     
  * ## Options
  *
- * `id`: The id of the list you want to display
+ * `id`: The id of the owner whose lists you want
  *
  * ## Templates
  *
@@ -26,10 +30,26 @@ define({
   templates: ['lists'],
   events: { 'submit form' : 'createList' },
 
+  //SALE _ PABO
+  //Idealement : Refresh automatique quand une datasource change
+  refreshEvents: ['model.hull.me.change', 'model.hull.me.lists.change'],
+
   datasources: {
     lists: ":id/lists"
   },
 
+  beforeRender: function(data){
+    if(data.lists){
+      _.each(data.lists,function(list){
+        _.each(list.items,function(item){
+          item.name = item.name||item.uid
+        });
+      });
+    }
+
+    return data;
+  },
+  
   createList: function(e) {
     e.preventDefault();
     var self = this, inputs = {};
