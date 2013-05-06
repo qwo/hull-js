@@ -140,19 +140,13 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
           dfd.fail(options.error)
           dfd
 
-        BaseHullModel = Backbone.Model.extend
+        Model = Backbone.IdentityMap Backbone.Model.extend
           sync: sync
           initialize: ->
             @on 'change', ->
               args = slice.call(arguments)
               eventName = ("model.hull." + @_id + '.' + 'change')
               core.mediator.emit(eventName, { eventName: eventName, model: @, changes: args[1]?.changes })
-
-        RawModel = Backbone.IdentityMap BaseHullModel.extend
-          url: ->
-            @_id || @id
-
-        Model = Backbone.IdentityMap BaseHullModel.extend
           url: ->
             if (@id || @_id)
               url = @_id || @id
@@ -164,15 +158,15 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
           model: Model
           sync: sync
 
-        keywords = 
+        keywords =
           me: null
           app: null
           org: null
-        setupModel = (attrs, raw)->
+        setupModel = (attrs)->
           if keywords[attrs._id]
             model = generateModel({id:keywords[attrs._id]})
           else
-            model = generateModel(attrs, raw)
+            model = generateModel(attrs)
           dfd   = model.deferred = core.data.deferred()
           model._id = attrs._id
           modelId = model.id || model.get('id')
@@ -193,20 +187,19 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
           model
 
         api.model = (attrs)->
-          rawFetch(attrs, false)
+          rawFetch(attrs)
 
-        rawFetch = (attrs, raw)->
+        rawFetch = (attrs)->
           attrs = { _id: attrs } if _.isString(attrs)
           attrs._id = attrs.path unless attrs._id
           throw new Error('A model must have an identifier...') unless attrs?._id?
-          setupModel(attrs, raw || false)
+          setupModel(attrs)
 
-        generateModel = (attrs, raw) ->
-          _Model = if raw then RawModel else Model
+        generateModel = (attrs) ->
           if attrs.id || attrs._id
-            model = new _Model(attrs)
+            model = new Model(attrs)
           else
-            model = new _Model()
+            model = new Model()
 
         setupCollection = (path)->
           route           = (apiParams.parse [path])[0]
@@ -309,7 +302,7 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
             attrs = data[m]
             if attrs
               attrs._id = m
-              rawFetch(attrs, true)
+              rawFetch(attrs)
 
           initialized.resolve(data)
 
@@ -327,12 +320,13 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
 
       afterAppStart: (app)->
 
-        base.me     = rawFetch('me', true);
-        base.app    = rawFetch('app', true);
-        base.org    = rawFetch('org', true);
+        base.me     = rawFetch('me');
+        base.app    = rawFetch('app');
+        base.org    = rawFetch('org');
 
         app.core.mediator.emit  'hull.currentUser', app.core.currentUser
         app.core.mediator.on    'hull.currentUser', (headers)->
           rawFetch({id: headers.id, _id: 'me'}) if headers?.id
+
 
     module
