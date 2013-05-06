@@ -117,13 +117,9 @@ define ['backbone', 'underscore', 'lib/client/datasource'], (Backbone, _, Dataso
           console.error("Error in Building Render Context", err.message, err)
           @renderError.call(@, err.message, err)
         readyDfd.done (data, tpls)=>
-          args = data
           _.map keys, (k,i)=>
-            @data[k] = args[i]
-            if _.isFunction args[i]?.toJSON
-              ret[k] = args[i].toJSON()
-            else
-              ret[k] = args[i]
+            @data[k] = data[i]
+            ret[k] = data[i]
           ret.loggedIn    = @loggedIn()
           ret.debug       = @sandbox.config.debug
           ret.renderCount = @_renderCount
@@ -172,7 +168,14 @@ define ['backbone', 'underscore', 'lib/client/datasource'], (Backbone, _, Dataso
           beforeRendering = $.when(beforeCtx)
           beforeRendering.done (dataAfterBefore)=>
             data = _.extend(dataAfterBefore || ctx, data)
-            @doRender(tpl, data)
+            plainJSON = {}
+            _.each data, (elt, k)->
+              if _.isFunction elt.toJSON
+                plainJSON[k] = elt.toJSON()
+              else
+                plainJSON[k] = elt
+            debugger
+            @doRender(tpl, plainJSON)
             _.defer(@afterRender.bind(@, data))
             _.defer((-> @sandbox.start(@$el)).bind(@))
             @isInitialized = true;
