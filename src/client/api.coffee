@@ -68,7 +68,8 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
           promise
 
         # Main method to request the API
-        api = -> message.apply(api, apiParams.parse(slice.call(arguments)))
+        api = ->
+          message.apply(api, apiParams.parse(slice.call(arguments)))
 
         # Method-specific function
         _.each ['get', 'post', 'put', 'delete'], (method)->
@@ -172,6 +173,9 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
           modelId = model.id || model.get('id')
           if modelId
             model._fetched = true
+            _id = model.get('_id')
+            if _id && keywords.hasOwnProperty(_id)
+              keywords[_id] = model.get('id')
             dfd.resolve(model)
           else
             model._fetched = false
@@ -190,7 +194,9 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
           rawFetch(attrs)
 
         rawFetch = (attrs)->
-          attrs = { _id: attrs } if _.isString(attrs)
+          if _.isString(attrs)
+            keywords[attrs] = null unless keywords.hasOwnProperty attrs
+            attrs = { _id: attrs }
           attrs._id = attrs.path unless attrs._id
           throw new Error('A model must have an identifier...') unless attrs?._id?
           setupModel(attrs)
@@ -320,9 +326,9 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
 
       afterAppStart: (app)->
 
-        base.me     = rawFetch('me');
-        base.app    = rawFetch('app');
-        base.org    = rawFetch('org');
+        base.me     = rawFetch({_id: 'me'});
+        base.app    = rawFetch({_id: 'me'});
+        base.org    = rawFetch({_id: 'me'});
 
         app.core.mediator.emit  'hull.currentUser', app.core.currentUser
         app.core.mediator.on    'hull.currentUser', (headers)->

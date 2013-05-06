@@ -61,10 +61,10 @@ define ['backbone', 'underscore', 'lib/client/datasource'], (Backbone, _, Dataso
           @className = "hull-widget"
           @className += " hull-#{@namespace}" if @namespace?
 
+        self = @
         _.each @datasources, (ds, i)=>
-          ds = _.bind ds, @ if _.isFunction ds
-          @datasources[i] = new Datasource(ds, @api) unless ds instanceof Datasource
-
+          ds = _.bind ds, self if _.isFunction ds
+          self.datasources[i] = new Datasource(ds, self.api) unless ds instanceof Datasource
         @sandbox.on(refreshOn, (=> @refresh()), @) for refreshOn in (@refreshEvents || [])
       catch e
         console.error("Error loading HullWidget", e.message)
@@ -104,7 +104,11 @@ define ['backbone', 'underscore', 'lib/client/datasource'], (Backbone, _, Dataso
         promises  = _.map keys, (k)=>
           ds = @datasources[k]
           ds.parse(_.extend({}, @, @options || {}))
-          ds.fetch()
+          dfd2 = ds.fetch()
+          dfd2.then (v)=>
+            console.log('VALUE', v)
+            v.on('change', => @refresh()) if v instanceof Backbone.Model
+          dfd2
 
         widgetDeferred = @sandbox.data.when.apply(undefined, promises)
         templateDeferred = @sandbox.template.load(@templates, @ref)
