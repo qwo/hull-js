@@ -132,11 +132,11 @@ define ['backbone', 'underscore', 'lib/client/datasource'], (Backbone, _, Dataso
         dfd.reject(e)
       dfd
 
+    #TODO Should be moved to auth.coffee
     loggedIn: =>
-      return false unless @sandbox.data.api.model('me').id?
-      identities = {}
-      @sandbox.data.api.model('me').get("identities").map (i)-> identities[i.provider] = i
-      identities
+      identities = @sandbox.data.api.model('me').get('identities')
+      return false unless identities
+      identities.map (i)-> identities[i.provider] = i
 
     getTemplate: (tpl, data)=>
       tpl || @template || @templates[0]

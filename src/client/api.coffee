@@ -2,23 +2,20 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
 
   (app) ->
 
-    models = {}
-
-    clearModelsCache =->
-      console.warn("clearModelsCache")
-      models = _.pick(models, 'me', 'app', 'org')
 
     rpc = false
     rawFetch = null
     module =
       require:
         paths:
+          BackboneIdentityMap: 'components/Backbone.IdentityMap/backbone-identity-map'
           easyXDM: 'components/easyXDM/easyXDM'
           backbone: 'components/backbone/backbone'
           cookie: 'components/jquery.cookie/jquery.cookie'
         shim:
           easyXDM: { exports: 'easyXDM' }
           backbone: { exports: 'Backbone', deps: ['underscore', 'jquery'] }
+          BackboneIdentityMap: { exports: 'Backbone.IdentityMap', deps: ['backbone'] }
 
       # Builds the URL used by easyXDM
       # Based upon the (app) configuration
@@ -37,6 +34,7 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
         easyXDM   = require('easyXDM')
 
         slice = Array.prototype.slice
+        require 'BackboneIdentityMap'
 
 
         #
@@ -60,8 +58,9 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
           onSuccess = (res)->
             if res.provider == 'hull' && res.headers
               setCurrentUser(res.headers)
-            callback(res.response)
-            promise.resolve(res.response)
+            res = res.response || {};
+            callback(res)
+            promise.resolve(res)
           onError = (err)->
             errback(err)
             promise.reject(err)
@@ -143,12 +142,17 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
 
         BaseHullModel = Backbone.Model.extend
           sync: sync
+          initialize: ->
+            @on 'change', ->
+              args = slice.call(arguments)
+              eventName = ("model.hull." + @_id + '.' + 'change')
+              core.mediator.emit(eventName, { eventName: eventName, model: @, changes: args[1]?.changes })
 
-        RawModel = BaseHullModel.extend
+        RawModel = Backbone.IdentityMap BaseHullModel.extend
           url: ->
             @_id || @id
 
-        Model = BaseHullModel.extend
+        Model = Backbone.IdentityMap BaseHullModel.extend
           url: ->
             if (@id || @_id)
               url = @_id || @id
@@ -156,20 +160,23 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
               url = @collection?.url
             url
 
-        Collection = Backbone.Collection.extend
+        Collection = Backbone.IdentityMap Backbone.Collection.extend
           model: Model
           sync: sync
 
+        keywords = 
+          me: null
+          app: null
+          org: null
         setupModel = (attrs, raw)->
-          model = generateModel(attrs, raw)
-          model.on 'change', ->
-            args = slice.call(arguments)
-            eventName = ("model.hull." + model._id + '.' + 'change')
-            core.mediator.emit(eventName, { eventName: eventName, model: model, changes: args[1]?.changes })
+          if keywords[attrs._id]
+            model = generateModel({id:keywords[attrs._id]})
+          else
+            model = generateModel(attrs, raw)
           dfd   = model.deferred = core.data.deferred()
           model._id = attrs._id
-          models[attrs._id] = model #caching
-          if model.id
+          modelId = model.id || model.get('id')
+          if modelId
             model._fetched = true
             dfd.resolve(model)
           else
@@ -177,6 +184,9 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
             model.fetch
               success: ->
                 model._fetched = true
+                _id = model.get('_id')
+                if _id && keywords.hasOwnProperty(_id)
+                  keywords[_id] = model.get('id')
                 dfd.resolve(model)
               error:   ->
                 dfd.fail(model)
@@ -189,7 +199,7 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
           attrs = { _id: attrs } if _.isString(attrs)
           attrs._id = attrs.path unless attrs._id
           throw new Error('A model must have an identifier...') unless attrs?._id?
-          models[attrs._id] || setupModel(attrs, raw || false)
+          setupModel(attrs, raw || false)
 
         generateModel = (attrs, raw) ->
           _Model = if raw then RawModel else Model
@@ -322,6 +332,7 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
         base.org    = rawFetch('org', true);
 
         app.core.mediator.emit  'hull.currentUser', app.core.currentUser
-        app.core.mediator.on    'hull.currentUser', clearModelsCache
+        app.core.mediator.on    'hull.currentUser', (headers)->
+          rawFetch({id: headers.id, _id: 'me'}) if headers?.id
 
     module
