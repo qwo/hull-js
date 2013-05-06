@@ -136,7 +136,9 @@ define ['backbone', 'underscore', 'lib/client/datasource'], (Backbone, _, Dataso
     loggedIn: =>
       identities = @sandbox.data.api.model('me').get('identities')
       return false unless identities
-      identities.map (i)-> identities[i.provider] = i
+      ret = {}
+      identities.map (i)-> ret[i.provider] = i
+      ret
 
     getTemplate: (tpl, data)=>
       tpl || @template || @templates[0]
