@@ -106,7 +106,6 @@ define ['backbone', 'underscore', 'lib/client/datasource'], (Backbone, _, Dataso
           ds.parse(_.extend({}, @, @options || {}))
           dfd2 = ds.fetch()
           dfd2.then (v)=>
-            console.log('VALUE', v)
             v.on('change', => @refresh()) if v instanceof Backbone.Model
           dfd2
 
