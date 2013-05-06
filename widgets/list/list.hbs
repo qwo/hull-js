@@ -1,0 +1,20 @@
+{{#list}}
+  <h4>{{humanize name}}</h4>
+  <ul class="media-list">
+    {{#items}}
+      <li class='media'>
+        <h6> {{name}} </h6>
+        <p> {{description}} </p>
+      </li>
+    {{/items}}
+    {{^items}}
+      <li class='media-list'>
+        <p><small>Empty List</small></p>
+      </li>
+    {{/items}}
+  </ul>
+{{/list}}
+
+{{^list}}
+  <p><small>No list by this name</small></p>
+{{/list}}

@@ -12,6 +12,8 @@
  * ## Options
  *
  * - `list-name`: The name of the list you want to show. List will automatically be created if it does not exist yet.
+ * OR
+ * - `list-id`: The ID of the list you want to show.
  * - `id` : The ID of the object you want to add / remove to the list.
  * - `uid` : Alternatively, any external UID you want to add to the list. Object will be created as an external Entity
  *
@@ -23,7 +25,9 @@
 define({
   type: "Hull",
 
-  refreshEvents: ['model.hull.me.change'],
+  //SALE _ PABO
+  //Idealement : Refresh automatique quand une datasource change
+  refreshEvents: ['model.hull.me.change', 'model.hull.me.lists.:listName.change'],
 
   templates: ["list_toggle"],
 
@@ -31,18 +35,16 @@ define({
     listName: 'likes'
   },
 
-  initialize: function() {
-
-  },
-
-  datasources:{
-    // list: "me/lists/:listName"
-    list: function() {
-      if (this.loggedIn()) {
-        this.list = this.api.model("me/lists/"+this.options.listName);
-        return this.list.deferred;
+  datasources: {
+    list: function(){
+      //SALE _ PABO
+      if(this.options.listId){
+        return this.api(this.options.listId)        
+      } else {
+        return this.api('me/lists/'+this.options.listName)
       }
     },
+    // 'me/lists/:listName'
     obj: ":id"
   },
 
@@ -53,7 +55,7 @@ define({
       data.isListed = _.include(itemIds, this.id);
       data.objName = data.obj.name || data.obj.uid;
       data.listName = data.list.name;
-      this.itemPath = data.list.id + "/items/" + data.obj.id;
+      this.itemPath = this.options.listId || (data.list.id + "/items/" + data.obj.id);
     }
     return data;
   },
