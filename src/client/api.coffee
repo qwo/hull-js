@@ -1,6 +1,10 @@
 define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base, apiParams) ->
 
   (app) ->
+    keywords =
+      me: null
+      app: null
+      org: null
 
 
     rpc = false
@@ -159,10 +163,6 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
           model: Model
           sync: sync
 
-        keywords =
-          me: null
-          app: null
-          org: null
         setupModel = (attrs)->
           if keywords[attrs._id]
             model = generateModel({id:keywords[attrs._id]})
@@ -174,7 +174,8 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
           if modelId
             model._fetched = true
             _id = model.get('_id')
-            if _id && keywords.hasOwnProperty(_id)
+            if _id && !keywords[_id]
+              console.log('Setting URI', _id)
               keywords[_id] = model.get('id')
             dfd.resolve(model)
           else
@@ -183,7 +184,8 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
               success: ->
                 model._fetched = true
                 _id = model.get('_id')
-                if _id && keywords.hasOwnProperty(_id)
+                if _id && !keywords._id
+                  console.log('Setting URI', _id)
                   keywords[_id] = model.get('id')
                 dfd.resolve(model)
               error:   ->
@@ -195,8 +197,13 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
 
         rawFetch = (attrs)->
           if _.isString(attrs)
-            keywords[attrs] = null unless keywords.hasOwnProperty attrs
-            attrs = { _id: attrs }
+            uri = attrs
+            attrs = { _id: uri }
+            if keywords.hasOwnProperty uri
+              attrs.id = keywords[uri]
+            else
+              keywords[uri] = null
+
           attrs._id = attrs.path unless attrs._id
           throw new Error('A model must have an identifier...') unless attrs?._id?
           setupModel(attrs)
