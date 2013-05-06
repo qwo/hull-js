@@ -57,7 +57,7 @@ define ['underscore'], (_)->
     fetch: ()->
       if _.isFunction(@def)
         ret = @def()
-        return ret.fetch() if ret instanceof Backbone.Model
+        return ret.deferred if ret instanceof Backbone.Model
         ret
       else
         if @type == 'model'
