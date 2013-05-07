@@ -90,37 +90,6 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
 
         #
         #
-        # Current user management
-        #
-        #
-
-
-        app.core.setCurrentUser = setCurrentUser = (headers={})->
-          return unless app.config.appId
-          cookieName = "hull_#{app.config.appId}"
-          currentUserId = app.core.currentUser?.id
-          if headers && headers['Hull-User-Id'] && headers['Hull-User-Sig']
-            val = btoa(JSON.stringify(headers))
-            $.cookie(cookieName, val, path: "/")
-            if currentUserId != headers['Hull-User-Id']
-              app.core.currentUser = {
-                id:   headers['Hull-User-Id'],
-                sig:  headers['Hull-User-Sig']
-              }
-              app.core.mediator.emit('hull.currentUser', app.core.currentUser)
-          else
-            $.removeCookie(cookieName, path: "/")
-            app.core.currentUser = false
-            app.core.mediator.emit('hull.currentUser', app.core.currentUser) if currentUserId
-
-          app.sandbox.config ?= {}
-          app.sandbox.config.curentUser = app.core.currentUser
-
-
-
-
-        #
-        #
         # Models/Collection related
         #
         #

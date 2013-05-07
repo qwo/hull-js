@@ -5,6 +5,12 @@ define ->
   authenticating = false
 
   (app) ->
+    loggedIn = ->
+      identities = app.sandbox.data.api.model('me').get('identities')
+      return false unless identities
+      ret = {}
+      identities.map (i)-> ret[i.provider] = i
+      ret
 
     # Starts the login process
     # @throws Error with invalid providerName
@@ -58,6 +64,26 @@ define ->
       finally
         authenticating = false
 
+    setCurrentUser = (headers={})->
+      return unless app.config.appId
+      cookieName = "hull_#{app.config.appId}"
+      currentUserId = app.core.currentUser?.id
+      if headers && headers['Hull-User-Id'] && headers['Hull-User-Sig']
+        val = btoa(JSON.stringify(headers))
+        $.cookie(cookieName, val, path: "/")
+        if currentUserId != headers['Hull-User-Id']
+          app.core.currentUser = {
+            id:   headers['Hull-User-Id'],
+            sig:  headers['Hull-User-Sig']
+          }
+          app.core.mediator.emit('hull.currentUser', app.core.currentUser)
+      else
+        $.removeCookie(cookieName, path: "/")
+        app.core.currentUser = false
+        app.core.mediator.emit('hull.currentUser', app.core.currentUser) if currentUserId
+
+      app.sandbox.config ?= {}
+      app.sandbox.config.curentUser = app.core.currentUser
 
 
     # Generates the complete URL to be reached to validate login
@@ -91,5 +117,7 @@ define ->
 
         app.sandbox.login = login
         app.sandbox.logout = logout
+        app.core.setCurrentUser = setCurrentUser
+        app.sandbox.loggedIn = loggedIn
 
     module
