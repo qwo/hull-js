@@ -115,8 +115,7 @@ module.exports = function (grunt) {
             string:         'components/underscore.string/lib/underscore.string',
             jquery:         'empty:',
             text:           'components/requirejs-text/text',
-            base64:         'components/base64/base64',
-            BackboneIdentityMap: 'components/Backbone.IdentityMap/backbone-identity-map',
+            base64:         'components/base64/base64'
           },
           shim: {
             backbone:   { exports: 'Backbone', deps: ['underscore', 'jquery'] },
@@ -137,8 +136,7 @@ module.exports = function (grunt) {
             'aura/ext/debug',
             'aura/ext/mediator',
             'aura/ext/widgets',
-            'lib/hull',
-            'BackboneIdentityMap'
+            'lib/hull'
           ].concat(auraExtensions)
            .concat(clientLibs),
           out: 'dist/<%= PKG_VERSION %>/hull.js'

@@ -1,25 +1,16 @@
-define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base, apiParams) ->
+define ['lib/version', 'lib/hullbase', 'lib/client/api/params', 'lib/client/api/dataModels'], (version, base, apiParams, dataModels) ->
 
   (app) ->
-    keywords =
-      me: null
-      app: null
-      org: null
-
-
     rpc = false
-    rawFetch = null
     module =
       require:
         paths:
-          BackboneIdentityMap: 'components/Backbone.IdentityMap/backbone-identity-map'
           easyXDM: 'components/easyXDM/easyXDM'
           backbone: 'components/backbone/backbone'
           cookie: 'components/jquery.cookie/jquery.cookie'
         shim:
           easyXDM: { exports: 'easyXDM' }
           backbone: { exports: 'Backbone', deps: ['underscore', 'jquery'] }
-          BackboneIdentityMap: { exports: 'Backbone.IdentityMap', deps: ['backbone'] }
 
       # Builds the URL used by easyXDM
       # Based upon the (app) configuration
@@ -38,7 +29,6 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
         easyXDM   = require('easyXDM')
 
         slice = Array.prototype.slice
-        require 'BackboneIdentityMap'
 
 
         #
@@ -84,167 +74,18 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
             message.apply(api, args)
 
         core.data.api = api
+        dataModels.initialize api, core.data.deferred, core.mediator
         core.track = sandbox.track = (eventName, params)->
           core.data.api({provider:"track", path: eventName}, 'post', params)
 
 
-        #
-        #
-        # Models/Collection related
-        #
-        #
 
-
-        methodMap =
-          'create': 'post'
-          'update': 'put'
-          'delete': 'delete'
-          'read':   'get'
-
-        sync = (method, model, options={})->
-          url   = if _.isFunction(model.url) then model.url() else model.url
-          verb  = methodMap[method]
-
-          data = options.data
-          if !data? && model && (method == 'create' || method == 'update' || method == 'patch')
-            data = options.attrs || model.toJSON(options)
-
-          dfd = api(url, verb, data)
-          dfd.then(options.success)
-          dfd.fail(options.error)
-          dfd
-
-        Model = Backbone.IdentityMap Backbone.Model.extend
-          sync: sync
-          initialize: ->
-            @on 'change', ->
-              args = slice.call(arguments)
-              eventName = ("model.hull." + @_id + '.' + 'change')
-              core.mediator.emit(eventName, { eventName: eventName, model: @, changes: args[1]?.changes })
-          url: ->
-            if (@id || @_id)
-              url = @_id || @id
-            else
-              url = @collection?.url
-            url
-
-        Collection = Backbone.IdentityMap Backbone.Collection.extend
-          model: Model
-          sync: sync
-
-        setupModel = (attrs)->
-          if keywords[attrs._id]
-            model = generateModel({id:keywords[attrs._id]})
-          else
-            model = generateModel(attrs)
-          dfd   = model.deferred = core.data.deferred()
-          model._id = attrs._id
-          modelId = model.id || model.get('id')
-          if modelId
-            model._fetched = true
-            _id = model.get('_id')
-            if _id && !keywords[_id]
-              console.log('Setting URI', _id)
-              keywords[_id] = model.get('id')
-            dfd.resolve(model)
-          else
-            model._fetched = false
-            model.fetch
-              success: ->
-                model._fetched = true
-                _id = model.get('_id')
-                if _id && !keywords._id
-                  console.log('Setting URI', _id)
-                  keywords[_id] = model.get('id')
-                dfd.resolve(model)
-              error:   ->
-                dfd.fail(model)
-          model
-
-        api.model = (attrs)->
-          rawFetch(attrs)
-
-        rawFetch = (attrs)->
-          if _.isString(attrs)
-            uri = attrs
-            attrs = { _id: uri }
-            if keywords.hasOwnProperty uri
-              attrs.id = keywords[uri]
-            else
-              keywords[uri] = null
-
-          attrs._id = attrs.path unless attrs._id
-          throw new Error('A model must have an identifier...') unless attrs?._id?
-          setupModel(attrs)
-
-        generateModel = (attrs) ->
-          if attrs.id || attrs._id
-            model = new Model(attrs)
-          else
-            model = new Model()
-
-        setupCollection = (path)->
-          route           = (apiParams.parse [path])[0]
-          collection      = new Collection
-          collection.url  = path
-          collection.on 'all', ->
-            args = slice.call(arguments)
-            eventName = ("collection." + route.path.replace(/\//g, ".") + '.' + args[0])
-            core.mediator.emit(eventName, { eventName: eventName, collection: collection, changes: args[1]?.changes })
-          dfd   = collection.deferred = core.data.deferred()
-          if collection.models.length > 0
-            collection._fetched = true
-            dfd.resolve(collection)
-          else
-            collection._fetched = false
-            collection.fetch
-              success: ->
-                collection._fetched = true
-                dfd.resolve(collection)
-              error:   ->
-                dfd.fail(collection)
-          collection
+        api.model = dataModels.createModel
 
         api.collection = (path)->
           throw new Error('A model must have an path...') unless path?
-          fullPath = apiParams.parse([path])[0].path
-          setupCollection.call(api, path)
+          dataModels.createCollection path
 
-        api.batch = ->
-          args      = slice.call(arguments)
-          # next      = args.shift()
-          promises  = []
-          requests  = []
-          responses = []
-          callback  = errback = null
-
-          # # Parsing the arguments...
-          while (next)
-            type = typeof next
-            if (type == 'function')
-              if !callback
-                callback = next
-              else if !errback
-                errback = next
-              else
-                throw new Error('Incorrect arguments passed to Hull.batch(). Only callback & errback can be defined.')
-            else
-              requests.push(next)
-
-            next = args.shift()
-
-          _.map(requests, (request)->
-            if _.isString(request)
-              req = [{ path: request, method: 'get' }]
-            else
-              req = [request]
-            promises.push(message.apply(api, req))
-          )
-
-          # Actual request
-          res = core.data.when.apply($, promises)
-          res.then(callback, errback)
-          res
 
 
         #
@@ -284,7 +125,7 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
             attrs = data[m]
             if attrs
               attrs._id = m
-              rawFetch(attrs)
+              dataModels.createModel(attrs)
 
           initialized.resolve(data)
 
@@ -302,13 +143,13 @@ define ['lib/version', 'lib/hullbase', 'lib/client/api/params'], (version, base,
 
       afterAppStart: (app)->
 
-        base.me     = rawFetch({_id: 'me'});
-        base.app    = rawFetch({_id: 'me'});
-        base.org    = rawFetch({_id: 'me'});
+        base.me     = dataModels.createModel({_id: 'me'});
+        base.app    = dataModels.createModel({_id: 'me'});
+        base.org    = dataModels.createModel({_id: 'me'});
 
         app.core.mediator.emit  'hull.currentUser', app.core.currentUser
         app.core.mediator.on    'hull.currentUser', (headers)->
-          rawFetch({id: headers.id, _id: 'me'}) if headers?.id
+          dataModels.createModel({id: headers.id, _id: 'me'}) if headers?.id
 
 
     module
