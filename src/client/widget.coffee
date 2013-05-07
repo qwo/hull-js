@@ -174,7 +174,6 @@ define ['backbone', 'underscore', 'lib/client/datasource'], (Backbone, _, Dataso
                 plainJSON[k] = elt.toJSON()
               else
                 plainJSON[k] = elt
-            debugger
             @doRender(tpl, plainJSON)
             _.defer(@afterRender.bind(@, data))
             _.defer((-> @sandbox.start(@$el)).bind(@))
