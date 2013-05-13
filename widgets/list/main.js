@@ -22,7 +22,7 @@ define({
 
   //SALE _ PABO
   //Idealement : Refresh automatique quand une datasource change
-  refreshEvents: ['model.hull.me.change', ':id'],
+  refreshEvents: ['model.hull.me.change'],
 
   datasources: {
     list: ":id"
