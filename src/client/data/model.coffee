@@ -1,12 +1,6 @@
 define ['underscore', 'backbone', './sync'], (_, Backbone, sync)->
-  Base = Backbone.Model.extend
+  Backbone.Model.extend
     sync: sync
-
-  RawModel = Base.extend
-    url: ->
-      @_id || @id
-
-  Model = Base.extend
     url: ->
       if (@id || @_id)
         url = @_id || @id
@@ -14,6 +8,3 @@ define ['underscore', 'backbone', './sync'], (_, Backbone, sync)->
         url = @collection?.url
       url
 
-  return
-    Raw: RawModel
-    Model: Model

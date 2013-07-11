@@ -12,7 +12,10 @@ define ['underscore', 'lib/utils/version', 'lib/api/params', 'lib/api/auth', 'ea
     remoteUrl
 
 
+  dfd = null;
+
   (config)->
+    return dfd if dfd;
     message = null
     # Main method to request the API
     api = -> message.apply(undefined, apiParams.parse(slice.call(arguments)))

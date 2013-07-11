@@ -1,5 +1,4 @@
-define ['underscore', 'lib/client/datasource', 'lib/client/widget/context', 'lib/utils/promises'], (_, Datasource, Context, promises)->
-
+define ['underscore', 'lib/utils/promises', 'lib/hullbase', 'lib/client/data/datasource', 'lib/client/widget/context'], (_, promises, base, Datasource, Context)->
   (app)->
     debug = false
 
@@ -43,7 +42,6 @@ define ['underscore', 'lib/client/datasource', 'lib/client/widget/context', 'lib
 
       constructor: (options)->
         @ref          = options.ref
-        @api          = @sandbox.data.api
         @datasources  = _.extend {}, default_datasources, @datasources, options.datasources
         @refresh     ?= _.throttle(@render, 200)
 
@@ -67,7 +65,7 @@ define ['underscore', 'lib/client/datasource', 'lib/client/widget/context', 'lib
 
           _.each @datasources, (ds, i)=>
             ds = _.bind ds, @ if _.isFunction ds
-            @datasources[i] = new Datasource(ds, @api) unless ds instanceof Datasource
+            @datasources[i] = new Datasource(ds) unless ds instanceof Datasource
 
           @sandbox.on(refreshOn, (=> @refresh()), @) for refreshOn in (@refreshEvents || [])
         catch e
@@ -136,9 +134,9 @@ define ['underscore', 'lib/client/datasource', 'lib/client/widget/context', 'lib
         dfd.promise()
 
       loggedIn: =>
-        return false unless @sandbox.data.api.model('me').id?
+        return false unless default_datasources.me.get('id')
         identities = {}
-        @sandbox.data.api.model('me').get("identities").map (i)-> identities[i.provider] = i
+        default_datasources.me.get("identities").map (i)-> identities[i.provider] = i
         identities
 
       getTemplate: (tpl, data)=>
@@ -190,10 +188,13 @@ define ['underscore', 'lib/client/datasource', 'lib/client/widget/context', 'lib
         data = _.extend { id: @id, widget: @options.name }, defaultData, data
         @sandbox.track(name, data)
 
-    (app)->
-      default_datasources =
-        me: new Datasource 'me', app.core.data.api
-        app: new Datasource 'app', app.core.data.api
-        org: new Datasource 'org', app.core.data.api
-      debug = app.config.debug
-      app.core.registerWidgetType("Hull", HullWidget.prototype)
+    (auraApp)->
+      me = new Datasource 'me'
+      app = new Datasource 'app'
+      org = new Datasource 'org'
+      debug = auraApp.config.debug
+      auraApp.core.registerWidgetType("Hull", HullWidget.prototype)
+      promises.when(me.fetch(), app.fetch(), org.fetch()).then (me, app, org)->
+        base.me = default_datasources.me = me
+        base.app = default_datasources.app = app
+        base.org = default_datasources.org = org

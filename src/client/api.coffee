@@ -1,13 +1,11 @@
-define ['underscore', 'lib/hullbase', 'lib/api', 'lib/utils/promises'], (_, base, apiModule, promises) ->
+define ['underscore', 'lib/api', 'lib/utils/promises'], (_, apiModule, promises) ->
 
   (app) ->
-
     models = {}
 
     clearModelsCache =->
       models = _.pick(models, 'me', 'app', 'org')
 
-    rawFetch = null
 
     module =
       require:
@@ -23,117 +21,24 @@ define ['underscore', 'lib/hullbase', 'lib/api', 'lib/utils/promises'], (_, base
         apiModule = apiModule(app.config)
         apiModule.then (obj)->
           core.data.api = api = obj.api
-          core.track = sandbox.track = (eventName, params)->
-            core.data.api({provider:"track", path: eventName}, 'post', params)
+          core.track = sandbox.track = (eventname, params)->
+            core.data.api({provider:"track", path: eventname}, 'post', params)
           core.flag = sandbox.flag = (id)->
             core.data.api({provider:"hull", path:[id, 'flag'].join('/')}, 'post')
 
           #
           #
-          # Models/Collection related
+          # models/collection related
           #
           #
 
-
-          Collection = app.core.mvc.Collection.extend
-            model: Model
-            sync: sync
-
-          setupModel = (attrs, raw)->
-            model = generateModel(attrs, raw)
-            model.on 'change', ->
-              args = slice.call(arguments)
-              eventName = ("model.hull." + model._id + '.' + 'change')
-              core.mediator.emit(eventName, { eventName: eventName, model: model, changes: args[1]?.changes })
-            model._id = attrs._id
-            models[attrs._id] = model #caching
-            # if model.id
-            #   model._fetched = true
-            # else
-            #   model._fetched = false
-            #   model.fetch
-            #     success: ->
-            #       model._fetched = true
-            model
-
-          core.data.api.model = (attrs)->
-            rawFetch(attrs, false)
-
-          rawFetch = (attrs, raw)->
-            attrs = { _id: attrs } if _.isString(attrs)
-            attrs._id = attrs.path unless attrs._id
-            throw new Error('A model must have an identifier...') unless attrs?._id?
-            models[attrs._id] || setupModel(attrs, raw || false)
-
-          generateModel = (attrs, raw) ->
-            _Model = if raw then RawModel else Model
-            if attrs.id || attrs._id
-              model = new _Model(attrs)
-            else
-              model = new _Model()
-
-          setupCollection = (path)->
-            route           = (core.data.api.parseRoute [path])[0]
-            collection      = new Collection
-            collection.url  = path
-            collection.on 'all', ->
-              args = slice.call(arguments)
-              eventName = ("collection." + route.path.replace(/\//g, ".") + '.' + args[0])
-              core.mediator.emit(eventName, { eventName: eventName, collection: collection, changes: args[1]?.changes })
-            dfd   = collection.deferred = core.data.deferred()
-            if collection.models.length > 0
-              collection._fetched = true
-              dfd.resolve(collection)
-            else
-              collection._fetched = false
-              collection.fetch
-                success: ->
-                  collection._fetched = true
-                  dfd.resolve(collection)
-                error:   ->
-                  dfd.fail(collection)
-            collection
-
-          core.data.api.collection = (path)->
-            throw new Error('A model must have an path...') unless path?
-            setupCollection.call(core.data.api, path)
-
-          core.data.api.batch = ->
-            err = new Error 'Incorrect arguments passed to Hull.data.api.batch(). Only Arrays, callback and errback are accepted.'
-            args      = slice.call(arguments)
-            promises  = []
-            requests  = []
-            responses = []
-            callback  = errback = null
-            arg       = null
-
-            # # Parsing the arguments...
-            while (arg = args.shift())
-              type = typeof arg
-              if (type == 'function')
-                if !callback
-                  callback = arg
-                else if !errback
-                  errback = arg
-                else
-                  throw err
-              else
-                throw err unless _.isArray(arg)
-                requests.push(arg)
-
-            throw new Error('No request given. Aborting') unless requests.length
-            promises = _.map requests, (request)->
-              core.data.api.apply(core.data.api, request).promise()
-
-
-            # Actual request
-            res = core.data.when.apply(undefined, promises)
-            res.then(callback, errback)
-            res
-
+            # model.on 'change', ->
+            #   args = slice.call(arguments)
+            #   eventname = ("model.hull." + model._id + '.' + 'change')
+            #   core.mediator.emit(eventname, { eventname: eventname, model: model, changes: args[1]?.changes })
 
         #
-        # Initialization
+        # initialization
         #
 
         initialized = core.data.deferred()
@@ -160,7 +65,7 @@ define ['underscore', 'lib/hullbase', 'lib/api', 'lib/utils/promises'], (_, base
                 me.fetch().then ->
                   app.core.mediator.emit('hull.login', me)
               catch err
-                console.error "Error on auth promise resolution", err
+                console.error "error on auth promise resolution", err
             , ->
               app.core.mediator.emit 'hull.auth.failure'
 
@@ -169,11 +74,11 @@ define ['underscore', 'lib/hullbase', 'lib/api', 'lib/utils/promises'], (_, base
               app.core.mediator.emit('hull.logout')
               core.data.api.model('me').clear()
 
-          for m in ['me', 'app', 'org', 'entity']
-            attrs = data[m]
-            if attrs
-              attrs._id = m
-              rawFetch(attrs, true)
+          # for m in ['me', 'app', 'org', 'entity']
+          #   attrs = data[m]
+          #   if attrs
+          #     attrs._id = m
+          #     rawFetch(attrs, true)
 
           initialized.resolve(data)
 
@@ -185,11 +90,6 @@ define ['underscore', 'lib/hullbase', 'lib/api', 'lib/utils/promises'], (_, base
         initialized
 
       afterAppStart: (app)->
-        base.me     = rawFetch('me', true);
-        base.app    = rawFetch('app', true);
-        base.org    = rawFetch('org', true);
-
         app.core.mediator.on    'hull.login', clearModelsCache
         app.core.mediator.on    'hull.logout', clearModelsCache
-
     module
