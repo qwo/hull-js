@@ -30,11 +30,9 @@ define ['underscore'], (_)->
         ds =
           path: ds
           provider: 'hull'
-        @type = if (ds.path.lastIndexOf('/') in [-1, 0]) then 'model' else 'collection'
       else if _.isObject(ds) && !_.isFunction(ds)
         throw _errDefinition unless ds.path
         ds.provider = ds.provider || 'hull'
-        @type = ds.type || 'collection'
       @def = ds
 
     #
@@ -54,26 +52,34 @@ define ['underscore'], (_)->
     fetch: ()->
       dfd = $.Deferred()
       if _.isFunction(@def)
-        ret = @def()
-        if ret?.promise
-          dfd = ret
-        else
-          dfd.resolve ret
+      #   ret = @def()
+      #   if ret?.promise
+      #     dfd = ret
+      #   else
+      #     dfd.resolve ret
       else
-        dfd.resolve(false) if /undefined/.test(@def.path)
-        if @type == 'model'
-          data = @transport.model(@def)
-        else if @type == 'collection'
-          data = @transport.collection(@def)
-        else
-          dfd.reject new TypeError('Unknown type of datasource: ' + @type);
-        if data._fetched
-          dfd.resolve data
-        else
-          data.once 'sync', ->
-            dfd.resolve data
-          data.once 'error', (model, xhr)->
-            dfd.reject xhr
+        @type = if (ds.path.lastIndexOf('/') in [-1, 0]) then 'model' else 'collection'
+        @transport(@def).then (data)->
+          if _.isArray(data)
+            obj = new Backbone.Model(data)
+          else if _.isObject(data)
+            obj = new Backbone.Model(data)
+          else
+            dfd.resolve(data)
+        # dfd.resolve(false) if /undefined/.test(@def.path)
+        # if @type == 'model'
+        #   data = @transport.model(@def)
+        # else if @type == 'collection'
+        #   data = @transport.collection(@def)
+        # else
+        #   dfd.reject new TypeError('Unknown type of datasource: ' + @type);
+        # if data._fetched
+        #   dfd.resolve data
+        # else
+        #   data.once 'sync', ->
+        #     dfd.resolve data
+        #   data.once 'error', (model, xhr)->
+        #     dfd.reject xhr
       dfd.promise()
 
   Datasource

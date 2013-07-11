@@ -35,44 +35,6 @@ define ['underscore', 'lib/hullbase', 'lib/api', 'lib/utils/promises'], (_, base
           #
 
 
-          methodMap =
-            'create': 'post'
-            'update': 'put'
-            'delete': 'delete'
-            'read':   'get'
-
-          sync = (method, model, options={})->
-            url   = if _.isFunction(model.url) then model.url() else model.url
-            verb  = methodMap[method]
-
-            data = options.data
-            if !data? && model && (method == 'create' || method == 'update' || method == 'patch')
-              data = options.attrs || model.toJSON(options)
-
-            dfd = core.data.api(url, verb, data)
-            dfd.then(options.success)
-            dfd.then (resolved)->
-              model.trigger('sync', model, resolved, options)
-            dfd.fail(options.error)
-            dfd.fail (rejected)->
-              model.trigger 'error', model, rejected, options
-            dfd
-
-          BaseHullModel = app.core.mvc.Model.extend
-            sync: sync
-
-          RawModel = BaseHullModel.extend
-            url: ->
-              @_id || @id
-
-          Model = BaseHullModel.extend
-            url: ->
-              if (@id || @_id)
-                url = @_id || @id
-              else
-                url = @collection?.url
-              url
-
           Collection = app.core.mvc.Collection.extend
             model: Model
             sync: sync
@@ -85,13 +47,13 @@ define ['underscore', 'lib/hullbase', 'lib/api', 'lib/utils/promises'], (_, base
               core.mediator.emit(eventName, { eventName: eventName, model: model, changes: args[1]?.changes })
             model._id = attrs._id
             models[attrs._id] = model #caching
-            if model.id
-              model._fetched = true
-            else
-              model._fetched = false
-              model.fetch
-                success: ->
-                  model._fetched = true
+            # if model.id
+            #   model._fetched = true
+            # else
+            #   model._fetched = false
+            #   model.fetch
+            #     success: ->
+            #       model._fetched = true
             model
 
           core.data.api.model = (attrs)->
