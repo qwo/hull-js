@@ -1,4 +1,4 @@
-define ['underscore', 'lib/utils/promises', 'lib/hullbase', 'lib/client/data/datasource', 'lib/client/widget/context'], (_, promises, base, Datasource, Context)->
+define ['underscore', 'backbone', 'lib/utils/promises', 'lib/hullbase', 'lib/client/data/datasource', 'lib/client/widget/context'], (_, Backbone, promises, base, Datasource, Context)->
   (app)->
     debug = false
 
@@ -31,7 +31,7 @@ define ['underscore', 'lib/utils/promises', 'lib/hullbase', 'lib/client/data/dat
         e.stopImmediatePropagation()
 
 
-    class HullWidget extends app.core.mvc.View
+    class HullWidget extends Backbone.View
       actions: {}
 
       templates: []
@@ -42,7 +42,7 @@ define ['underscore', 'lib/utils/promises', 'lib/hullbase', 'lib/client/data/dat
 
       constructor: (options)->
         @ref          = options.ref
-        @datasources  = _.extend {}, default_datasources, @datasources, options.datasources
+        @datasources  = _.extend {}, @datasources, options.datasources
         @refresh     ?= _.throttle(@render, 200)
 
         for k, v of @options
@@ -76,7 +76,7 @@ define ['underscore', 'lib/utils/promises', 'lib/hullbase', 'lib/client/data/dat
           return sb.util.entity.encode(@uid) if @uid
           sb.config.entity_id
         options.id = getId.call(options)
-        app.core.mvc.View.prototype.constructor.apply(@, arguments)
+        Backbone.View.prototype.constructor.apply(@, arguments)
         @render()
 
       renderTemplate: (tpl, data)=>
@@ -104,6 +104,8 @@ define ['underscore', 'lib/utils/promises', 'lib/hullbase', 'lib/client/data/dat
         ctx.add 'isAdmin', @sandbox.isAdmin
         ctx.add 'debug', @sandbox.config.debug
         ctx.add 'renderCount', ++@_renderCount
+        _.each default_datasources, (ds, k)->
+          ctx.add k, ds
 
         dfd = @sandbox.data.deferred()
         datasourceErrors = {}
@@ -134,9 +136,10 @@ define ['underscore', 'lib/utils/promises', 'lib/hullbase', 'lib/client/data/dat
         dfd.promise()
 
       loggedIn: =>
-        return false unless default_datasources.me.get('id')
+        me = default_datasources.me
+        return false unless (me && me.get('id'))
         identities = {}
-        default_datasources.me.get("identities").map (i)-> identities[i.provider] = i
+        me.get("identities").map (i)-> identities[i.provider] = i
         identities
 
       getTemplate: (tpl, data)=>

@@ -61,7 +61,8 @@ define ['underscore', 'lib/api', 'lib/utils/promises'], (_, apiModule, promises)
             obj.auth.login.apply(undefined, arguments).then ->
               app.core.mediator.emit 'hull.auth.complete'
               try
-                me = app.sandbox.data.api.model('me')
+                me = app.sandbox.data.api('me')
+                debugger
                 me.fetch().then ->
                   app.core.mediator.emit('hull.login', me)
               catch err
@@ -72,7 +73,7 @@ define ['underscore', 'lib/api', 'lib/utils/promises'], (_, apiModule, promises)
           app.sandbox.logout = (callback=->)->
             obj.auth.logout(callback).then ->
               app.core.mediator.emit('hull.logout')
-              core.data.api.model('me').clear()
+              core.data.api('me').clear()
 
           # for m in ['me', 'app', 'org', 'entity']
           #   attrs = data[m]
