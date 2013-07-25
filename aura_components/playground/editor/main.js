@@ -13,6 +13,15 @@ Hull.define({
     this.sandbox.on('hull.playground.load', this.sandbox.util._.bind(function(code) {
       this.editor.setValue(code);
     }, this));
+
+    this.sandbox.on('hull.steps.*', this.sandbox.util._.bind(function(data) {
+      this.editor.setValue(data[this.options.content]);
+    }, this));
+
+    this.sandbox.on('hull.playground.render', this.sandbox.util._.bind(function(uid) {
+        this.sandbox.emit('hull.playground.editor.update.'+uid,{editor:this, content:this.editor.getValue(), type: this.options.content});
+    }, this));
+
   },
 
   afterRender: function() {
@@ -28,6 +37,7 @@ Hull.define({
     });
 
     this.run(code);
+    this.sandbox.emit('hull.playground.editor.register',{editor:this, type:this.options.content});
   },
 
   actions: {

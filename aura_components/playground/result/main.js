@@ -5,6 +5,10 @@ Hull.define({
     'result'
   ],
 
+  actions: {
+    run:'run'
+  },
+
   initialize: function() {
     this.code = this.options.code || '';
 
@@ -19,5 +23,10 @@ Hull.define({
   updateCode: function(code) {
     this.code = code;
     this.render();
+  },
+
+  run: function(){
+    var uid = this.sandbox.util._.uniqueId();
+    this.sandbox.emit('hull.playground.render',uid);
   }
 });
