@@ -35,5 +35,8 @@
   },
   "engines": {
     "node": "~0.10"
+  },
+  "dependencies": {
+    "require-ractive-plugin": "~0.1.2"
   }
 }

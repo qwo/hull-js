@@ -221,13 +221,6 @@ module.exports = function (grunt) {
       out: 'dist/<%= PKG_VERSION%>/REVISION'
     },
     wrap: {
-      Handlebars: {
-        src: 'node_modules/grunt-contrib-handlebars/node_modules/handlebars/dist/handlebars.js',
-        dest: 'lib/shims',
-        wrapper: [
-          '(function () {', ';define("handlebars", function () {return Handlebars;});})()'
-        ]
-      },
       easyXDM: {
         src: 'components/easyXDM/easyXDM.js',
         dest: 'lib/shims',

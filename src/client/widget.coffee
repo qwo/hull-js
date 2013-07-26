@@ -1,4 +1,4 @@
-define ['jquery', 'underscore', 'lib/client/datasource', 'lib/client/widget/context', 'lib/utils/promises'], ($, _, Datasource, Context, promises)->
+define ['jquery', 'underscore', 'Ractive', 'lib/client/templates', 'lib/client/datasource', 'lib/client/widget/context', 'lib/utils/promises'], ($, _, Ractive, templates, Datasource, Context, promises)->
 
   (app)->
     debug = false
@@ -121,7 +121,7 @@ define ['jquery', 'underscore', 'lib/client/datasource', 'lib/client/widget/cont
             ctx.addDatasource(k, ds.fetch(), handler).then (res)=>
               @data[k] = res
           widgetDeferred = @sandbox.data.when.apply(undefined, promiseArray)
-          templateDeferred = @sandbox.template.load(@templates, @ref)
+          templateDeferred = templates.load(@templates, @ref)
           templateDeferred.done (tpls)=>
             @_templates     = tpls
           readyDfd = promises.when(widgetDeferred, templateDeferred)
@@ -146,12 +146,17 @@ define ['jquery', 'underscore', 'lib/client/datasource', 'lib/client/widget/cont
       getTemplate: (tpl, data)=>
         tpl || @template || @templates[0]
 
+      _R: {}
       doRender: (tpl, data)=>
-        tplName = @getTemplate(tpl, data)
-        ret = @renderTemplate(tplName, data)
+        tplName = tpl || @template || @templates[0]
+        rac = new Ractive({
+          el: @el,
+          template: @_templates[tplName],
+          data: data,
+          debug: true
+        });
         @$el.addClass(this.className)
-        ret = "<!-- START #{tplName} RenderCount: #{@_renderCount} -->#{ret}<!-- END #{tplName}-->" if debug
-        @$el.html(ret)
+        @_R[tplName] = rac
         return @
 
       afterRender: (data)=> data

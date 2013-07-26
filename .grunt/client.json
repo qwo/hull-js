@@ -9,14 +9,15 @@
       "underscore":     "components/underscore/underscore",
       "eventemitter":   "components/eventemitter2/lib/eventemitter2",
       "backbone":       "components/backbone/backbone",
+      "Ractive":        "components/ractive/build/Ractive",
       "easyXDM":        "lib/shims/components/easyXDM/easyXDM",
-      "handlebars":     "lib/shims/node_modules/grunt-contrib-handlebars/node_modules/handlebars/dist/handlebars",
       "requireLib":     "components/requirejs/require",
       "moment":         "components/moment/moment",
       "cookie":         "components/jquery.cookie/jquery.cookie",
       "string":         "components/underscore.string/lib/underscore.string",
       "jquery":         "empty:",
       "text":           "components/requirejs-text/text",
+      "rv":             "node_modules/require-ractive-plugin/rv",
       "base64":         "components/base64/base64"
     },
     "shim": {
@@ -31,7 +32,9 @@
       "cookie",
       "base64",
       "backbone",
+      "Ractive",
       "text",
+      "rv",
       "aura/ext/debug",
       "aura/ext/mediator",
       "aura/ext/widgets",
@@ -39,7 +42,7 @@
       ],
     "out": "dist/<%= PKG_VERSION %>/hull.js",
     "wrap": {
-      "start": "(function () {var require, requirejs, define,root = {jQuery: jQuery}; (function () {",
+      "start": "(function () {var require, requirejs, define,root = {jQuery: jQuery, document: window.document}; (function () {",
       "end": ";Hull.define = define; Hull.require = require; }).call(root);for(var i in root){root.hasOwnProperty(i) && Hull.define(i.toLowerCase(), function (){return root[i];})}})();"
     }
   }

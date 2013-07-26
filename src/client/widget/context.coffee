@@ -1,4 +1,4 @@
-define ['underscore', 'lib/utils/promises'], (_, promises)->
+define ['underscore', 'lib/utils/promises', 'backbone'], (_, promises, Backbone)->
   onDataError = (datasourceName, err)->
     console.log "An error occurred with datasource #{datasourceName}", err
   _dfd = promises.deferred
@@ -19,8 +19,8 @@ define ['underscore', 'lib/utils/promises'], (_, promises)->
         else if _.isArray(res) && res[1] == 'success' && res[2].status == 200
           @add name, res[0]
         else
-          @add name, res
-        dfd.resolve(res)
+          @add name, new Backbone.Model(res)
+        dfd.resolve @_context[name]
       , (err)=>
         @_errors[name] = err
         resolved = fallback err

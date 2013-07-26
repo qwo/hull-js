@@ -2,7 +2,6 @@
 //@TODO This extension should mostly be useless now. Remove it ?
 define({
   require: {
-    paths:  { handlebars: 'components/handlebars/handlebars' },
     shim:   { handlebars: { exports: 'Handlebars' } }
   },
 
