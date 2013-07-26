@@ -36,14 +36,11 @@ define ['aura/aura', 'lib/hullbase', 'underscore'], (Aura, HullDef, _) ->
 
     initProcess = hull.app
         .use(myApp())
-        .use('aura-extensions/aura-handlebars') #TODO Can probably be removed. See the file for details.
         .use('aura-extensions/aura-backbone')
         .use('aura-extensions/hull-utils')
-        .use('lib/client/handlebars-helpers')
         .use('lib/client/helpers')
         .use('lib/client/entity')
         .use('lib/client/api')
-        .use('lib/client/templates')
         .use('lib/client/widget')
         .start({ widgets: 'body' })
 
