@@ -1,10 +1,7 @@
-
 <div class="try-list-wrapper">
   <div class="pull-right ">
-    <button class="btn primary tiny" data-hull-action="reset">Reset</button>
-    <button class="btn primary tiny" data-hull-action="fix">Fix Code</button>
-    <button class="btn primary tiny" data-hull-action="prev">Prev</button>
-    <button class="btn primary tiny" data-hull-action="next">Next</button>
+    <button class="btn primary tiny" data-hull-action="prev">← Prev</button>
+    <button class="btn primary tiny" data-hull-action="next">Next →</button>
   </div>
   <h3 class="title {{current.id}}">
     <strong>{{current.title}}</strong>
@@ -16,4 +13,8 @@
       <p class="description gray-dark">{{current.description}}</p>
     </li>
   </ul>
+  <div class="pull-right ">
+    <button class="btn tiny" data-hull-action="reset">Reset</button>
+    <button class="btn transparent tiny" data-hull-action="fix">Show solution</button>
+  </div>
 </div>
