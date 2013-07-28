@@ -44,7 +44,7 @@ define ['underscore', 'lib/utils/version', 'lib/api/params', 'lib/api/auth', 'ea
         dfd.reject('Remote loading has failed. Please check "orgUrl" and "appId" in your configuration. This may also be about connectivity.')
       , 30000)
 
-    setCurrentUser = (headers={})->
+    setUserCookies = (headers={})->
       return unless config.appId
       cookieName = "hull_#{config.appId}"
       currentUserId = $.cookie cookieName
@@ -56,9 +56,7 @@ define ['underscore', 'lib/utils/version', 'lib/api/params', 'lib/api/auth', 'ea
 
     onRemoteReady = (remoteConfig)->
       data = remoteConfig.data
-
-      if data.headers && data.headers['Hull-User-Id']
-        setCurrentUser data.headers
+      setUserCookies data.headers
       window.clearTimeout(timeout)
 
 
@@ -89,7 +87,7 @@ define ['underscore', 'lib/utils/version', 'lib/api/params', 'lib/api/auth', 'ea
 
       onSuccess = (res)->
         if res.provider == 'hull' && res.headers
-          setCurrentUser(res.headers)
+          setUserCookies(res.headers)
         callback(res.response)
         promise.resolve(res.response)
       onError = (err)->
