@@ -20,7 +20,7 @@ define ['underscore', 'lib/api', 'lib/utils/promises'], (_, apiModule, promises)
 
         apiModule = apiModule(app.config)
         apiModule.then (obj)->
-          core.data.api = api = obj.api
+          core.data.api= obj.api
           core.track = sandbox.track = (eventname, params)->
             core.data.api({provider:"track", path: eventname}, 'post', params)
           core.flag = sandbox.flag = (id)->
@@ -44,7 +44,6 @@ define ['underscore', 'lib/api', 'lib/utils/promises'], (_, apiModule, promises)
         initialized = core.data.deferred()
         apiModule.then (obj)->
           remoteConfig = obj.remoteConfig
-          data = remoteConfig.data
           app.config.assetsUrl            = remoteConfig.assetsUrl
           app.config.services             = remoteConfig.services
           app.config.widgets.sources.hull = remoteConfig.baseUrl + '/widgets'
@@ -54,7 +53,7 @@ define ['underscore', 'lib/api', 'lib/utils/promises'], (_, apiModule, promises)
           app.sandbox.config.appId        = app.config.appId
           app.sandbox.config.orgUrl       = app.config.orgUrl
           app.sandbox.config.services     = remoteConfig.services
-          app.sandbox.config.entity_id    = data.entity?.id
+          app.sandbox.config.entity_id    = remoteConfig.data.entity?.id
           app.sandbox.isAdmin             = remoteConfig.access_token?
 
           app.sandbox.login = (provider, opts, callback=->)->
