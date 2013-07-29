@@ -1,4 +1,4 @@
-define ['underscore', 'lib/api', 'lib/utils/promises'], (_, apiModule, promises) ->
+define ['underscore', 'lib/api', 'lib/utils/promises', 'lib/client/data/pool'], (_, apiModule, promises, ModelPool) ->
 
   (app) ->
     models = {}
@@ -59,19 +59,15 @@ define ['underscore', 'lib/api', 'lib/utils/promises'], (_, apiModule, promises)
           app.sandbox.login = (provider, opts, callback=->)->
             apiObj.auth.login.apply(undefined, arguments).then ->
               app.core.mediator.emit 'hull.auth.complete'
-              try
-                me = app.sandbox.data.api('me')
-                me.fetch().then ->
-                  app.core.mediator.emit('hull.login', me)
-              catch err
-                console.error "error on auth promise resolution", err
+              ModelPool.refresh('me').then (me)->
+                app.core.mediator.emit('hull.login', me)
             , ->
               app.core.mediator.emit 'hull.auth.failure'
 
           app.sandbox.logout = (callback=->)->
             apiObj.auth.logout(callback).then ->
               app.core.mediator.emit('hull.logout')
-              core.data.api('me').clear()
+              ModelPool.get('me').then (me)-> me.clear()
 
           # for m in ['me', 'app', 'org', 'entity']
           #   attrs = data[m]
@@ -79,7 +75,7 @@ define ['underscore', 'lib/api', 'lib/utils/promises'], (_, apiModule, promises)
           #     attrs._id = m
           #     rawFetch(attrs, true)
 
-          initialized.resolve(data)
+          initialized.resolve()
 
         apiModule.fail (e)->
           initialized.reject e
