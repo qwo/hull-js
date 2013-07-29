@@ -65,9 +65,6 @@ Hull.define({
     // If I'm logged in, then create an array of logged In providers
     if(this.loggedIn()){
       data.loggedInProviders = this.sandbox.util._.keys(this.loggedIn());
-      data.name = data.me.get('name');
-      data.picture = data.me.get('picture');
-      data.description = data.me.get('description');
     } else {
       data.loggedInProviders = [];
     }

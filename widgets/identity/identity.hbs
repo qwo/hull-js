@@ -7,10 +7,10 @@
 {{#if matchingProviders}}
   <div class="hull-identity__signout align-center">
     {{#if loggedIn}}
-    {{#if picture}}<img class="img-rounded" src="{{picture}}" alt="{{name}}">{{/if}}
-    <h1> {{name}} </h1>
-    {{#if description}}
-      <p>{{description}}</p>
+    {{#if me.picture}}<img class="img-rounded" src="{{me.picture}}" alt="{{me.name}}">{{/if}}
+    <h1> {{me.name}} </h1>
+    {{#if me.description}}
+      <p>{{me.description}}</p>
     {{/if}}
     <hr>
     {{/if}}
