@@ -39,6 +39,7 @@ define ['underscore', 'lib/api', './model', './collection'], (_, api, Model, Col
     parse:(bindings)->
       @def.path = parseURI(@def.path, bindings) unless _.isFunction(@def)
 
+    _fetching: null
     #
     # Send the requests.
     # If the definition of the datasource is a function,
@@ -47,6 +48,8 @@ define ['underscore', 'lib/api', './model', './collection'], (_, api, Model, Col
     # @returns {mixed} May return an object, a Promise most likely or anything else
     #
     fetch: ()->
+      if @_fetching
+        return @_fetching
       dfd = $.Deferred()
       def = @def
       if _.isFunction(@def)
@@ -58,14 +61,15 @@ define ['underscore', 'lib/api', './model', './collection'], (_, api, Model, Col
       else
         # Dangerous. We can do it here because
         # we KNOW the API has already been configures before
-        api().then (apiObj)->
+        api(@def).then (apiObj)->
           apiObj.api(def).then (data)->
             if _.isArray(data)
               data = new Collection(data)
-            else if _.isObject(data)
+            else
               data = new Model(data)
             dfd.resolve(data)
-      dfd.promise()
+      @_fetching =dfd.promise()
+      @_fetching
 
   Datasource
 
