@@ -30,9 +30,9 @@ define ['underscore', 'lib/utils/promises', 'lib/client/data/datasource'], (_, p
       dfd = promises.deferred()
       dfd.resolve(obj)
     dfd
-  refresh: ->
+  refresh: (id)->
     dfd = promises.deferred()
-    @get().then (obj)->
+    @get(id).then (obj)->
       obj.fetch().then (obj)->
         dfd.resolve obj
     dfd
