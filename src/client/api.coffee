@@ -32,10 +32,6 @@ define ['underscore', 'lib/api', 'lib/utils/promises', 'lib/client/data/pool'], 
           #
           #
 
-            # model.on 'change', ->
-            #   args = slice.call(arguments)
-            #   eventname = ("model.hull." + model._id + '.' + 'change')
-            #   core.mediator.emit(eventname, { eventname: eventname, model: model, changes: args[1]?.changes })
 
         #
         # initialization
