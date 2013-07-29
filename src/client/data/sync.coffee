@@ -1,4 +1,4 @@
-define ['underscore', 'lib/api'], (_, api)->
+define ['lib/utils/promises', 'underscore', 'lib/api'], (promises, _, api)->
   methodMap =
     'create': 'post'
     'update': 'put'
@@ -13,13 +13,15 @@ define ['underscore', 'lib/api'], (_, api)->
     if !data? && model && (method == 'create' || method == 'update' || method == 'patch')
       data = options.attrs || model.toJSON(options)
 
-    dfd = api(url, verb, data)
-    dfd.then(options.success)
-    dfd.then (resolved)->
-      model.trigger('sync', model, resolved, options)
-    dfd.fail(options.error)
-    dfd.fail (rejected)->
-      model.trigger 'error', model, rejected, options
-    dfd
+    deferred = promises.deferred()
+    deferred.then options.success
+    deferred.fail options.error
+    api().then (apiObj)->
+      dfd = apiObj.api(url, verb, data)
+      dfd.then (data)->
+        deferred.resolve data || {}
+      dfd.fail (rejected)->
+        deferred.reject rejected
+    deferred.promise()
 
 
