@@ -1,17 +1,4 @@
-define ['underscore', 'lib/api', './model', './collection'], (_, api, Model, Collection)->
-  #
-  # Parses the URI to replace placeholders with actual values
-  #
-  parseURI = (uri, bindings)->
-    placeHolders = uri.match(/(\:[a-zA-Z0-9-_]+)/g)
-    return uri unless placeHolders
-    for p in placeHolders
-      _key = p.slice(1)
-      unless _.has(bindings, _key)
-        throw new Error "Cannot resolve datasource binding #{p}"
-      uri = uri.replace(p, bindings[_key]);
-    uri
-
+define ['underscore', 'lib/api', './model', './collection', './urlMapper'], (_, api, Model, Collection, urlMapper)->
   #
   # Helps managing the various definitions a widget datasource can take
   # Sets decent defaults, validates input, and sends requests to the API
@@ -37,7 +24,7 @@ define ['underscore', 'lib/api', './model', './collection'], (_, api, Model, Col
     # @param {Object} bindings Key/Value pairs to replace the placeholders wih their values
     #
     parse:(bindings)->
-      @def.path = parseURI(@def.path, bindings) unless _.isFunction(@def)
+      @def.path = urlMapper(@def.path, bindings) unless _.isFunction(@def)
 
     _fetching: null
     #
