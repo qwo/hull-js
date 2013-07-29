@@ -65,7 +65,7 @@ define ['underscore', 'backbone', 'lib/utils/promises', 'lib/hullbase', 'lib/cli
 
           _.each @datasources, (ds, i)=>
             ds = _.bind ds, @ if _.isFunction ds
-            @datasources[i] = ds 
+            @datasources[i] = ds
 
           @sandbox.on(refreshOn, (=> @refresh()), @) for refreshOn in (@refreshEvents || [])
         catch e
@@ -170,12 +170,16 @@ define ['underscore', 'backbone', 'lib/utils/promises', 'lib/hullbase', 'lib/cli
             beforeRendering.done (dataAfterBefore)=>
               #FIXME SRSLY need some clarification
               data = _.extend(dataAfterBefore || ctx.build(), data)
+              jsonCtx = {}
+              _.each data, (ds, k)->
+                ds = ds.toJSON() if ds and _.isFunction(ds.toJSON)
+                jsonCtx[k] = ds
               _.each data, (ds)=>
                 #TODO This can be enhanced
                 if ds and _.isFunction(ds.on)
                   ds.on 'change', @mainRefresh
-              @doRender(tpl, data)
-              _.defer(@afterRender.bind(@, data))
+              @doRender(tpl, jsonCtx)
+              _.defer(@afterRender.bind(@, jsonCtx))
               _.defer((-> @sandbox.start(@$el)).bind(@))
               @isInitialized = true;
 
