@@ -2,9 +2,9 @@ define ['underscore', 'backbone', './sync'], (_, Backbone, sync)->
   Backbone.Model.extend
     sync: sync
     url: ->
-      if (@id || @_id)
-        url = @_id || @id
+      if @get('id')
+        url = @get('id')
       else
-        url = @collection?.url
+        url = @_alias || @collection?.url
       url
 
