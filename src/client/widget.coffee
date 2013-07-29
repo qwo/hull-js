@@ -1,4 +1,4 @@
-define ['underscore', 'backbone', 'lib/utils/promises', 'lib/hullbase', 'lib/client/data/datasource', 'lib/client/widget/context'], (_, Backbone, promises, base, Datasource, Context)->
+define ['underscore', 'backbone', 'lib/utils/promises', 'lib/hullbase', 'lib/client/data/pool', 'lib/client/data/urlMapper', 'lib/client/widget/context'], (_, Backbone, promises, base, ModelPool, urlMapper, Context)->
   (app)->
     debug = false
 
@@ -65,7 +65,7 @@ define ['underscore', 'backbone', 'lib/utils/promises', 'lib/hullbase', 'lib/cli
 
           _.each @datasources, (ds, i)=>
             ds = _.bind ds, @ if _.isFunction ds
-            @datasources[i] = new Datasource(ds) unless ds instanceof Datasource
+            @datasources[i] = ds 
 
           @sandbox.on(refreshOn, (=> @refresh()), @) for refreshOn in (@refreshEvents || [])
         catch e
@@ -77,6 +77,7 @@ define ['underscore', 'backbone', 'lib/utils/promises', 'lib/hullbase', 'lib/cli
           sb.config.entity_id
         options.id = getId.call(options)
         Backbone.View.prototype.constructor.apply(@, arguments)
+        @mainRefresh = => @refresh()
         @render()
 
       renderTemplate: (tpl, data)=>
@@ -109,16 +110,14 @@ define ['underscore', 'backbone', 'lib/utils/promises', 'lib/hullbase', 'lib/cli
 
         dfd = @sandbox.data.deferred()
         datasourceErrors = {}
-        @data = {}
         try
           keys = _.keys(@datasources)
           promiseArray  = _.map keys, (k)=>
             ds = @datasources[k]
-            ds.parse(_.extend({}, @, @options || {}))
+            uri = urlMapper(ds, _.extend({}, @, @options || {}))
             handler = @["on#{_.string.capitalize(_.string.camelize(k))}Error"]
-            ctx.addDatasource(k, ds.fetch(), handler).then (res)=>
-              @data[k] = res
-          widgetDeferred = @sandbox.data.when.apply(undefined, promiseArray)
+            ctx.addDatasource(k, ModelPool.get(uri), handler)
+          widgetDeferred = promises.when.apply(undefined, promiseArray)
           templateDeferred = @sandbox.template.load(@templates, @ref)
           templateDeferred.done (tpls)=>
             @_templates     = tpls
@@ -171,6 +170,10 @@ define ['underscore', 'backbone', 'lib/utils/promises', 'lib/hullbase', 'lib/cli
             beforeRendering.done (dataAfterBefore)=>
               #FIXME SRSLY need some clarification
               data = _.extend(dataAfterBefore || ctx.build(), data)
+              _.each data, (ds)=>
+                #TODO This can be enhanced
+                if ds and _.isFunction(ds.on)
+                  ds.on 'change', @mainRefresh
               @doRender(tpl, data)
               _.defer(@afterRender.bind(@, data))
               _.defer((-> @sandbox.start(@$el)).bind(@))
@@ -192,12 +195,12 @@ define ['underscore', 'backbone', 'lib/utils/promises', 'lib/hullbase', 'lib/cli
         @sandbox.track(name, data)
 
     (auraApp)->
-      me = new Datasource 'me'
-      app = new Datasource 'app'
-      org = new Datasource 'org'
       debug = auraApp.config.debug
       auraApp.core.registerWidgetType("Hull", HullWidget.prototype)
-      promises.when(me.fetch(), app.fetch(), org.fetch()).then (me, app, org)->
+      me = ModelPool.get 'me'
+      app = ModelPool.get 'app'
+      org = ModelPool.get 'org'
+      promises.when(me, app, org).then (me, app, org)->
         base.me = default_datasources.me = me
         base.app = default_datasources.app = app
         base.org = default_datasources.org = org
