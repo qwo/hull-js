@@ -19,8 +19,8 @@ define ['underscore', 'lib/api', 'lib/utils/promises'], (_, apiModule, promises)
         slice = Array.prototype.slice
 
         apiModule = apiModule(app.config)
-        apiModule.then (obj)->
-          core.data.api= obj.api
+        apiModule.then (apiObj)->
+          core.data.api= apiObj.api
           core.track = sandbox.track = (eventname, params)->
             core.data.api({provider:"track", path: eventname}, 'post', params)
           core.flag = sandbox.flag = (id)->
@@ -42,8 +42,8 @@ define ['underscore', 'lib/api', 'lib/utils/promises'], (_, apiModule, promises)
         #
 
         initialized = core.data.deferred()
-        apiModule.then (obj)->
-          remoteConfig = obj.remoteConfig
+        apiModule.then (apiObj)->
+          remoteConfig = apiObj.remoteConfig
           app.config.assetsUrl            = remoteConfig.assetsUrl
           app.config.services             = remoteConfig.services
           app.config.widgets.sources.hull = remoteConfig.baseUrl + '/widgets'
@@ -57,11 +57,10 @@ define ['underscore', 'lib/api', 'lib/utils/promises'], (_, apiModule, promises)
           app.sandbox.isAdmin             = remoteConfig.access_token?
 
           app.sandbox.login = (provider, opts, callback=->)->
-            obj.auth.login.apply(undefined, arguments).then ->
+            apiObj.auth.login.apply(undefined, arguments).then ->
               app.core.mediator.emit 'hull.auth.complete'
               try
                 me = app.sandbox.data.api('me')
-                debugger
                 me.fetch().then ->
                   app.core.mediator.emit('hull.login', me)
               catch err
@@ -70,7 +69,7 @@ define ['underscore', 'lib/api', 'lib/utils/promises'], (_, apiModule, promises)
               app.core.mediator.emit 'hull.auth.failure'
 
           app.sandbox.logout = (callback=->)->
-            obj.auth.logout(callback).then ->
+            apiObj.auth.logout(callback).then ->
               app.core.mediator.emit('hull.logout')
               core.data.api('me').clear()
 
