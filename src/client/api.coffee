@@ -1,4 +1,4 @@
-define ['underscore', 'lib/api', 'lib/utils/promises', 'lib/client/data/pool'], (_, apiModule, promises, ModelPool) ->
+define ['underscore', 'lib/api', 'lib/utils/promises', 'lib/client/data/objectResolver'], (_, apiModule, promises, ObjectResolver) ->
 
   (app) ->
     models = {}
@@ -55,7 +55,7 @@ define ['underscore', 'lib/api', 'lib/utils/promises', 'lib/client/data/pool'], 
           app.sandbox.login = (provider, opts, callback=->)->
             apiObj.auth.login.apply(undefined, arguments).then ->
               app.core.mediator.emit 'hull.auth.complete'
-              ModelPool.refresh('me').then (me)->
+              ObjectResolver.refresh('me').then (me)->
                 app.core.mediator.emit('hull.login', me)
             , ->
               app.core.mediator.emit 'hull.auth.failure'
@@ -63,7 +63,7 @@ define ['underscore', 'lib/api', 'lib/utils/promises', 'lib/client/data/pool'], 
           app.sandbox.logout = (callback=->)->
             apiObj.auth.logout(callback).then ->
               app.core.mediator.emit('hull.logout')
-              ModelPool.get('me').then (me)-> me.clear()
+              ObjectResolver.get('me').then (me)-> me.clear()
 
           # for m in ['me', 'app', 'org', 'entity']
           #   attrs = data[m]
