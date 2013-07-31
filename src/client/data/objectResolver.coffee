@@ -1,4 +1,6 @@
-define ['underscore', 'lib/utils/promises', './datasource', './urlMapper', './cache'], (_, promises, Datamapper, urlMapper, cache)->
+# The facade for model manegement
+# It's the only interface available to the widgets
+define ['underscore', 'lib/utils/promises', './dataMapper', './urlMapper', './cache'], (_, promises, Datamapper, urlMapper, cache)->
   # get or set, acually
   getOrCreate = (id)->
     if cache.has(id)
