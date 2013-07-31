@@ -26,7 +26,8 @@ define ['underscore'], (_)->
       throw new Error('already cached') if (force and keywordAliases[id])
       obj.then (realObj)->
         realObj._alias = id
-        cache[realObj.get('id')] = obj
+        realId = realObj.get('id')
+        cache[realId] = obj if realId
       keywordAliases[id] = obj
     else
       throw new Error('already cached') if (force and cache[id])
