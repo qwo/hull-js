@@ -1,4 +1,4 @@
-define ['underscore', 'backbone', 'lib/utils/promises', 'lib/hullbase', 'lib/client/data/pool', 'lib/client/data/urlMapper', 'lib/client/widget/context'], (_, Backbone, promises, base, ModelPool, urlMapper, Context)->
+define ['underscore', 'backbone', 'lib/utils/promises', 'lib/hullbase', 'lib/client/data/objectResolver', 'lib/client/data/urlMapper', 'lib/client/widget/context'], (_, Backbone, promises, base, ObjectResolver, urlMapper, Context)->
   (app)->
     debug = false
 
@@ -116,7 +116,7 @@ define ['underscore', 'backbone', 'lib/utils/promises', 'lib/hullbase', 'lib/cli
             ds = @datasources[k]
             uri = urlMapper(ds, _.extend({}, @, @options || {}))
             handler = @["on#{_.string.capitalize(_.string.camelize(k))}Error"]
-            ctx.addDatasource(k, ModelPool.get(uri), handler)
+            ctx.addDatasource(k, ObjectResolver.get(uri), handler)
           widgetDeferred = promises.when.apply(undefined, promiseArray)
           templateDeferred = @sandbox.template.load(@templates, @ref)
           templateDeferred.done (tpls)=>
@@ -201,9 +201,9 @@ define ['underscore', 'backbone', 'lib/utils/promises', 'lib/hullbase', 'lib/cli
     (auraApp)->
       debug = auraApp.config.debug
       auraApp.core.registerWidgetType("Hull", HullWidget.prototype)
-      me = ModelPool.get 'me'
-      app = ModelPool.get 'app'
-      org = ModelPool.get 'org'
+      me = ObjectResolver.get 'me'
+      app = ObjectResolver.get 'app'
+      org = ObjectResolver.get 'org'
       promises.when(me, app, org).then (me, app, org)->
         base.me = default_datasources.me = me
         base.app = default_datasources.app = app
