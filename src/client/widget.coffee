@@ -169,7 +169,7 @@ define ['underscore', 'backbone', 'lib/utils/promises', 'lib/hullbase', 'lib/cli
             beforeRendering = promises.when(beforeCtx)
             beforeRendering.done (dataAfterBefore)=>
               #FIXME SRSLY need some clarification
-              data = _.extend(dataAfterBefore || ctx.build(), data)
+              @data = data = _.extend(dataAfterBefore || ctx.build(), data)
               jsonCtx = {}
               _.each data, (ds, k)->
                 ds = ds.toJSON() if ds and _.isFunction(ds.toJSON)
