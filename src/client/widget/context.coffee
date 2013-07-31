@@ -14,9 +14,7 @@ define ['underscore', 'lib/utils/promises'], (_, promises)->
       fallback = onDataError.bind(undefined, name) unless _.isFunction(fallback)
       dfd = _dfd()
       dsPromise.then (res)=>
-        if _.isFunction res?.toJSON
-          @add name, res.toJSON()
-        else if _.isArray(res) && res[1] == 'success' && res[2].status == 200
+        if _.isArray(res) && res[1] == 'success' && res[2].status == 200
           @add name, res[0]
         else
           @add name, res
