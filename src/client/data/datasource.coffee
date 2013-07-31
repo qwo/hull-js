@@ -1,7 +1,11 @@
 define ['underscore', 'lib/api', './model', './collection', './urlMapper'], (_, api, Model, Collection, urlMapper)->
   #
-  # Helps managing the various definitions a widget datasource can take
-  # Sets decent defaults, validates input, and sends requests to the API
+  # The one and only way to manage raw data coming from the API.
+  # It 
+  # * takes any kind of descriptor (string with placholders, object leterals),
+  # * giv the urlMapper
+  # lets the API do its job,
+  #
   #
   class Datasource
     #
@@ -10,21 +14,7 @@ define ['underscore', 'lib/api', './model', './collection', './urlMapper'], (_, 
     constructor: (ds) ->
       _errDefinition  = new TypeError('Datasource is missing its definition. Cannot continue.')
       throw _errDefinition unless ds
-      if _.isString(ds)
-        ds =
-          path: ds
-          provider: 'hull'
-      else if _.isObject(ds) && !_.isFunction(ds)
-        throw _errDefinition unless ds.path
-        ds.provider = ds.provider || 'hull'
       @def = ds
-
-    #
-    # Replaces the placeholders in the URI with actual data
-    # @param {Object} bindings Key/Value pairs to replace the placeholders wih their values
-    #
-    parse:(bindings)->
-      @def.path = urlMapper(@def.path, bindings) unless _.isFunction(@def)
 
     _fetching: null
     #
