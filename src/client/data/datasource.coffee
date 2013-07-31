@@ -48,10 +48,11 @@ define ['underscore', 'lib/api', './model', './collection', './urlMapper'], (_, 
       else
         # Dangerous. We can do it here because
         # we KNOW the API has already been configures before
-        api(@def).then (apiObj)->
+        api().then (apiObj)->
           apiObj.api(def).then (data)->
             if _.isArray(data)
               data = new Collection(data)
+              data.url = def
             else
               data = new Model(data)
             dfd.resolve(data)
