@@ -35,8 +35,6 @@ Hull.define({
 
   templates: ['comments'],
 
-  refreshEvents: ['model.hull.me.change'],
-
   actions: {
     comment: 'postComment',
     delete:  'deleteComment',
@@ -49,21 +47,21 @@ Hull.define({
 
   datasources: {
     comments: ':id/comments'
+
   },
 
   beforeRender: function(data){
     "use strict";
-    this.sandbox.util._.each(data.comments, function(c) {
-      c.isDeletable = (c.user.id === this.data.me.id);
+    data.comments.each(function(c) {
+      c.set('isDeletable', c.get('user').id === data.me.get('id'), {silent: true});
       return c;
     }, this);
     return data;
   },
   afterRender: function() {
     "use strict";
-    if(this.options.focus || this.focusAfterRender) {
-      this.$el.find('input,textarea').focus();
-      this.focusAfterRender = false;
+    if(this.options.focus) {
+      this.resetForm();
     }
   },
 
@@ -71,10 +69,7 @@ Hull.define({
     "use strict";
     event.preventDefault();
     var id = data.data.id;
-    var $parent = data.el
-      .addClass('is-removing')
-      .parents('[data-hull-comment-id="'+ id +'"]');
-    this.api.delete(id).then(function () {$parent.remove();});
+    this.data.comments.get(id).destroy();
   },
 
   toggleLoading: function ($el) {
@@ -98,14 +93,14 @@ Hull.define({
 
     if (description && description.length > 0) {
       var attributes = { description: description };
-      this.api(this.id + '/comments', 'post', attributes).then(this.sandbox.util._.bind(function() {
-        this.toggleLoading($formWrapper);
-        this.focusAfterRender = true;
-        this.render();
-      }, this));
+      this.data.comments.create(attributes, {at: 0});
     }
   },
 
+  resetForm: function () {
+    "use strict";
+    this.$el.find('input,textarea').focus();
+  },
   flagItem: function (event, data) {
     "use strict";
     event.preventDefault();
