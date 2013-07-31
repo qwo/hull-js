@@ -1,6 +1,6 @@
-define ['underscore', 'lib/utils/promises', './datasource', './cache'], (_, promises, Datamapper, cache)->
+define ['underscore', 'lib/utils/promises', './datasource', './urlMapper', './cache'], (_, promises, Datamapper, urlMapper, cache)->
   # get or set, acually
-  get: (id)->
+  getOrCreate = (id)->
     if cache.has(id)
       obj = cache.get id
     else
@@ -9,10 +9,14 @@ define ['underscore', 'lib/utils/promises', './datasource', './cache'], (_, prom
       cache.set id, obj
     obj
 
+  # Pretty pointless for now, more to come
+  resolve: (id, bindings={})->
+    getorCreate(urlMapper(id, bindings).path)
+
 
   refresh: (id)->
     dfd = promises.deferred()
-    @get(id).then (obj)->
+    getOrCreate(id).then (obj)->
       obj.fetch().then (obj)->
         dfd.resolve obj
     dfd

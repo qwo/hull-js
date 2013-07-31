@@ -63,7 +63,7 @@ define ['underscore', 'lib/api', 'lib/utils/promises', 'lib/client/data/objectRe
           app.sandbox.logout = (callback=->)->
             apiObj.auth.logout(callback).then ->
               app.core.mediator.emit('hull.logout')
-              ObjectResolver.get('me').then (me)-> me.clear()
+              ObjectResolver.resolve('me').then (me)-> me.clear()
 
           # for m in ['me', 'app', 'org', 'entity']
           #   attrs = data[m]
