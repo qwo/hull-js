@@ -14,7 +14,8 @@
     "moment": "1.7.2",
     "underscore.string": "2.3.1",
     "jquery.cookie": "latest",
-    "twitter-text": "~1.6.1"
+    "twitter-text": "~1.6.1",
+    "aura_collection_view": "git://github.com/hull/aura_collection_view.git"
   },
   "devDependencies": {
     "JSCovReporter": "git://github.com/TwoApart/JSCovReporter.git"

@@ -37,7 +37,8 @@
       "aura/ext/debug",
       "aura/ext/mediator",
       "aura/ext/components",
-      "lib/hull"
+      "lib/hull",
+      "bower_components/aura_collection_view/src/collection_view"
       ],
     "out": "dist/<%= PKG_VERSION %>/hull.js",
     "wrap": {

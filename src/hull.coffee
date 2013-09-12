@@ -41,6 +41,7 @@ define ['aura/aura', 'lib/hullbase', 'underscore'], (Aura, HullDef, _) ->
         .use('aura-extensions/aura-moment')
         .use('aura-extensions/aura-twitter-text')
         .use('aura-extensions/hull-utils')
+        .use('bower_components/aura_collection_view/src/collection_view')
         .use('lib/client/handlebars-helpers')
         .use('lib/client/helpers')
         .use('lib/client/entity')
