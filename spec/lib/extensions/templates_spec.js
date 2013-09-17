@@ -21,7 +21,7 @@ define(['spec/support/spec_helper', 'jquery', 'lib/client/templates'], function(
   }
 
 
-  describe("Template loader", function() {
+  xdescribe("Template loader", function() {
     var app;
     beforeEach(function () {
       app = {

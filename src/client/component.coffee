@@ -46,6 +46,7 @@ define ['jquery', 'underscore', 'lib/client/datasource', 'lib/client/component/c
       options: {}
 
       constructor: (options)->
+        debugger
         @ref = options.ref
         @api = @sandbox.data.api
         @datasources = _.extend {}, default_datasources, @datasources, options.datasources

@@ -19,7 +19,7 @@
 
       sandbox.mvc = {};
       sandbox.mvc.View = function(view) {
-        return core.mvc.View.extend(view);
+        return core.mvc.RactiveView.extend(view);
       };
       sandbox.mvc.Model = function(model) {
         return core.mvc.Model.extend(model);

@@ -1,8 +1,8 @@
-define ['underscore', 'lib/hullbase', 'handlebars'], (_, Hull, Handlebars) ->
+define ['underscore', 'lib/hullbase'], (_, Hull) ->
 
   #Compiles the template depending on its definition
   setupTemplate = (tplSrc, tplName) ->
-    engine = module.templateEngine
+    return -> "PROUT"
     tplName = tplName.replace(/\//g,'.',)
     if (_.isFunction(tplSrc))
       compiled = engine.template tplSrc
@@ -23,9 +23,6 @@ define ['underscore', 'lib/hullbase', 'handlebars'], (_, Hull, Handlebars) ->
     # Meteor
     else if module.global.Meteor? && module.global.Template?[tplName]?
       parsed = module.global.Template[tplName]
-    # Sprockets
-    else if module.global.HandlebarsTemplates? && module.global.HandlebarsTemplates?[tplName]?
-      parsed = module.global.HandlebarsTemplates[tplName]
     else if module.global.Hull.templates._default?[tplName]
       parsed = setupTemplate(module.global.Hull.templates._default[tplName],  tplName)
     else
@@ -37,7 +34,6 @@ define ['underscore', 'lib/hullbase', 'handlebars'], (_, Hull, Handlebars) ->
     global: window
     require: require
     define: define
-    templateEngine: Handlebars
     getTemplateDefinition: _getTemplateDefinition
     initialize: (app) ->
       app.core.template.load = (names=[], ref, format="hbs") ->
