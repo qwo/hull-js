@@ -200,6 +200,10 @@ module.exports = function (grunt) {
         files: clientConfig.srcFiles,
         tasks: ['dist:client', 'do_test']
       },
+      aura: {
+        files: ['bower_components/aura/**/*.js'],
+        tasks: ['dist:client']
+      },
       spec: {
         files: ['spec/**/*.js'],
         tasks: ['mocha']
