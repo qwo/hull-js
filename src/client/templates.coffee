@@ -3,7 +3,7 @@ define ['underscore', 'lib/hullbase', 'handlebars'], (_, Hull, Handlebars) ->
   #Compiles the template depending on its definition
   setupTemplate = (tplSrc, tplName) ->
     engine = module.templateEngine
-    tplName = tplName.replace(/\//g,'.',)
+    tplName = tplName.replace(/\//g,'.')
     if (_.isFunction(tplSrc))
       compiled = engine.template tplSrc
     else
@@ -19,13 +19,15 @@ define ['underscore', 'lib/hullbase', 'handlebars'], (_, Hull, Handlebars) ->
     if localTpl.length
       parsed = setupTemplate(localTpl.text(), tplName)
     else if module.global.Hull.templates[tplName]
-      parsed = setupTemplate(module.global.Hull.templates["#{tplName}"],  tplName)
+      parsed = setupTemplate(module.global.Hull.templates[tplName],  tplName)
     # Meteor
     else if module.global.Meteor? && module.global.Template?[tplName]?
       parsed = module.global.Template[tplName]
     # Sprockets
     else if module.global.HandlebarsTemplates? && module.global.HandlebarsTemplates?[tplName]?
+      partialName = tplName.replace(/\//g, '.')
       parsed = module.global.HandlebarsTemplates[tplName]
+      module.templateEngine.registerPartial(partialName, parsed)
     else if module.global.Hull.templates._default?[tplName]
       parsed = setupTemplate(module.global.Hull.templates._default[tplName],  tplName)
     else
