@@ -46,7 +46,6 @@ Hull.define({
   },
 
   options: {
-    focus: true,
     order: 'desc'
   },
 
@@ -67,7 +66,7 @@ Hull.define({
   },
 
   getMessagesParams: function() {
-    var params = {  };
+    var params = {};
     if (this.options.limit) {
       params.per_page = this.options.limit;
     }
@@ -75,13 +74,14 @@ Hull.define({
   },
 
   initialize: function() {
-    this.sandbox.on('hull.conversation.select', function(id) {
-      this.options.id = id;
+    this.sandbox.on('hull.conversation.select', function(convo) {
+      this.options.id = convo.id;
       this.render();
     }, this);
   },
 
   beforeRender: function(data, errors) {
+    this.sandbox.emit('hull.conversation.selected', this.options.id);
     var _ = this.sandbox.util._;
     data.isAscending = this.options.order != 'desc';
     if (data.conversation) {
