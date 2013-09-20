@@ -1,3 +1,4 @@
+<div class='hull-conversation__list'>
 {{#each conversations}}
   <div class="media item" data-hull-action="select" data-hull-id="{{id}}">
     <a class="pull-left" href="#">
@@ -14,7 +15,7 @@
         </span>
         {{name}}
       </h5>
-      <small>updated {{fromNow updated_at}}</small>
+      <small>updated {{fromNow last_message_at}}</small>
     </div>
   </div>
 {{else}}
@@ -24,3 +25,4 @@
     </div>
   {{/if}}
 {{/each}}
+</div>
