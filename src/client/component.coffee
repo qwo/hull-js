@@ -63,6 +63,12 @@ define ['jquery', 'underscore', 'lib/client/datasource', 'lib/client/component/c
           # Building actions hash
           @actions = if _.isFunction(@actions) then @actions() else @actions
           @actions ?= {}
+          @actions.flag  ?= (e,params)=>
+            e && e.preventDefault()
+            id = params.data.id
+            msg = params.data.confirm || 'Do you want to report this content as inappropriate ?'
+            @sandbox.flag(id) if id && confirm(msg)
+
           @actions.login ?= (e, params)=> @sandbox.login(params.data.provider, params.data)
           @actions.linkIdentity ?= (e, params)=> @sandbox.linkIdentity(params.data.provider, params.data)
           @actions.unlinkIdentity ?= (e, params)=> @sandbox.unlinkIdentity(params.data.provider)
