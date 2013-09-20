@@ -1,0 +1,44 @@
+<table class='table'>
+  <thead>
+    <tr>
+      <th>
+        <div class="input-append">
+          Topic
+          <input class="span2" data-hull-search type="search" value="{{options.search}}" />
+          <button class="btn" type="button" data-hull-action='search'>Search</button>
+        </div>
+      </th>
+      <th>Category</th>
+      <th>Participants</th>
+      <th>Posts</th>
+      <th>Likes</th>
+      <th>Activity</th>
+    </tr>
+  </thead>
+  <tbody>
+  {{#if conversations}}
+  {{#each conversations}}
+  <tr>
+    <td><a class='btn-link' data-hull-action="select" data-hull-id="{{id}}">{{name}}</a></td>
+    <td><span class='label'>{{subject.uid}}</span></td>
+    <td>
+      {{#participants}}
+      <img src='{{picture}}' width='32' height='32' class='img-rounded' alt='{{name}}' />
+      {{/participants}}
+    </td>
+    <td>{{messages_count}}</td>
+    <td>{{stats.likes}}</td>
+    <td nowrap>{{fromNow last_message_at}}</td>
+  </tr>
+  {{/each}}
+  {{else}}
+  <tr>
+  {{#if errors.conversations}}
+    <td class="alert alert-error">
+      Unable to retrieve the conversations.
+    </td>
+  {{/if}}
+  </tr>
+  {{/if}}
+  </tbody>
+</table>
