@@ -51,10 +51,10 @@ define ['moment', 'underscore', 'aura-extensions/hull-utils', 'handlebars'], (mo
     ###*
      * Auto-links URLs in text.
      * Uses [twitter-text.js](https://github.com/twitter/twitter-text-js) behind the scenes.
-     * 
+     *
      *     snippet="You have to try http://hull.io/try"
      *
-     * 
+     *
      *     <p class='content'>{{autoLink snippet}}</p>
      *     => <p class='content'>You have to try <a href="http://hull.io/try">http://hull.io/try</a></p>
      *
@@ -63,7 +63,9 @@ define ['moment', 'underscore', 'aura-extensions/hull-utils', 'handlebars'], (mo
     ###
     HandlebarsHelpers.autoLink = (content)->
       return unless content?
-      twttr.txt.autoLink(content)
+      twitter = twttr?.txt?
+      return unless twitter
+      twitter.autoLink(twitter.htmlEscape(content))
 
     ###*
      * Return a formatted date
