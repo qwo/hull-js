@@ -63,7 +63,7 @@ define ['moment', 'underscore', 'aura-extensions/hull-utils', 'handlebars'], (mo
     ###
     HandlebarsHelpers.autoLink = (content)->
       return unless content?
-      twitter = twttr?.txt?
+      twitter = twttr?.txt
       return unless twitter
       twitter.autoLink(twitter.htmlEscape(content))
 
