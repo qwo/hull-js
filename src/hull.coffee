@@ -16,7 +16,7 @@ define ['aura/aura', 'lib/hullbase', 'underscore'], (Aura, HullDef, _) ->
         _.each cbArray, (cb)->
           app.core.mediator.on evt, cb
       if !app.config.debug
-        props = ['component', 'templates', 'emit', 'on', 'version', 'track', 'login', 'logout', 'data']
+        props = ['parse', 'component', 'templates', 'emit', 'on', 'version', 'track', 'login', 'logout', 'data']
         props.concat(app.config.expose || [])
         _h = {}
         _.map props, (k)->
@@ -30,9 +30,14 @@ define ['aura/aura', 'lib/hullbase', 'underscore'], (Aura, HullDef, _) ->
     config.namespace = 'hull'
     config.debug = config.debug && { enable: true }
 
+    _parseCalls = []
+
     hull =
       config: config
       app: new Aura(config)
+
+    window.Hull.parse = ()->
+      _parseCalls.push [].slice.call(arguments)
 
     initProcess = hull.app
         .use(myApp())
@@ -49,8 +54,12 @@ define ['aura/aura', 'lib/hullbase', 'underscore'], (Aura, HullDef, _) ->
         .use('lib/client/component')
         .use (app)->
           afterAppStart: (app)->
+            # window.Hull.parse = (el, options={})->
+            #   app.sandboxes.create().start(el, options)
+            _.each _parseCalls, (conf)->
+              _.bind(app.core.appSandbox.start, app.core.appSandbox)(conf...)
             window.Hull.parse = (el, options={})->
-              app.core.appSandbox.start(el, options)
+              app.sandboxes.create().start(el, options)
         .start({ components: 'body' })
 
     initProcess.fail (err)->
