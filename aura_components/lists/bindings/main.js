@@ -109,7 +109,7 @@ Hull.define({
     });
     this.$el.on('shown', this.sandbox.util._.bind(this.renderPopover, this));
     this.sandbox.dom.find(document.body).on('click', _.bind(function (evt) {
-      if (this.$el.find('.popover').find(evt.target).length === 0 && btn.index(evt.target) === -1) {
+      if (this.$el.find('.popover').find(evt.target).length === 0 && btn.find(evt.target).length === 0) {
         btn.popover('hide');
       }
     }, this));
