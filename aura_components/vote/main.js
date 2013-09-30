@@ -27,8 +27,12 @@ Hull.define({
   templates: ['vote'],
 
   datasources: {
-    vote: ':id/reviews/me',
-    target: ':id'
+    vote: function() {
+      return this.api(this.id + '/reviews/me');
+    },
+    target: function() {
+      return this.api(this.id)
+    }
   },
 
   onTargetError: function () {
