@@ -197,7 +197,7 @@ define ['moment', 'underscore', 'aura-extensions/hull-utils', 'handlebars'], (mo
      * @return {string}
     ###
     HandlebarsHelpers.pluralize = (number, single, plural) ->
-        (if (number <= 1) then single else plural)
+      (if (number <= 1) then single else plural)
 
 
     ###*
@@ -334,14 +334,14 @@ define ['moment', 'underscore', 'aura-extensions/hull-utils', 'handlebars'], (mo
     * @param  {Anything}  optional value to debug
     ###
     HandlebarsHelpers.debug = (optionalValue)->
-        console.log("Current Context")
-        console.log("====================")
-        console.log(@)
+      console.log("Current Context")
+      console.log("====================")
+      console.log(@)
 
-        if (optionalValue)
-          console.log("Value")
-          console.log("====================")
-          console.log(optionalValue)
+      if (optionalValue)
+        console.log("Value")
+        console.log("====================")
+        console.log(optionalValue)
 
     ###*
      * write text if value equals another value
@@ -356,7 +356,7 @@ define ['moment', 'underscore', 'aura-extensions/hull-utils', 'handlebars'], (mo
      *      2. 'checked'
     ###
     HandlebarsHelpers.outputIf = (obj, compare, output='', fallback='')->
-        if obj == compare then output else fallback;
+      if obj == compare then output else fallback;
 
 
     ###*
@@ -368,21 +368,21 @@ define ['moment', 'underscore', 'aura-extensions/hull-utils', 'handlebars'], (mo
      *      'reviewed'
     ###
     HandlebarsHelpers.activity = (map, entry)->
-        return '' unless entry? and map?
+      return '' unless entry? and map?
 
-        verb = entry.verb
-        type = entry.object?.type
-        return '' unless type? and verb?
+      verb = entry.verb
+      type = entry.object?.type
+      return '' unless type? and verb?
 
-        sentence = map[verb]?[type]
-        return sentence if sentence?
+      sentence = map[verb]?[type]
+      return sentence if sentence?
 
-        fallback = map.fallback
-        return '' unless fallback?
+      fallback = map.fallback
+      return '' unless fallback?
 
-        type = (entry.object?.uid if type is 'entity') || fallback.object[type] || entry.object.description
+      type = (entry.object?.uid if type is 'entity') || fallback.object[type] || entry.object.description
 
-        (fallback.verb[verb]||verb) + ' ' + type
+      (fallback.verb[verb]||verb) + ' ' + type
 
 
     ###*
@@ -401,8 +401,8 @@ define ['moment', 'underscore', 'aura-extensions/hull-utils', 'handlebars'], (mo
      *
     ###
     HandlebarsHelpers.to_s = (object)->
-        return '' unless object?
-        object.name||object.title||object.uid||object.description||object
+      return '' unless object?
+      object.name||object.title||object.uid||object.description||object
 
     ###*
      * prune {{ prune string 140 "more..." }}
