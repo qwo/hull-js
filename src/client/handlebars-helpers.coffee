@@ -423,4 +423,23 @@ define ['moment', 'underscore', 'aura-extensions/hull-utils', 'handlebars'], (mo
       _.str.truncate string, length, truncateString
 
 
+    ###*
+     * prune {{ prune string 140 "more..." }}
+     * Elegant version of truncate. Makes sure the pruned string
+     * does not exceed the original length.
+     * Avoid half-chopped words when truncating.
+    ###
+    HandlebarsHelpers.prune = (string, length, pruneString)->
+      _.str.prune string, length, pruneString
+
+
+    ###*
+     * truncate {{ truncate string 140 "more..." }}
+     * truncate string to a max number of character
+     * optional truncateString argument
+    ###
+    HandlebarsHelpers.truncate = (string, length, truncateString)->
+      _.str.truncate string, length, truncateString
+
+
     Handlebars.registerHelper(k, v) for k,v of HandlebarsHelpers
