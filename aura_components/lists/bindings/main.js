@@ -102,7 +102,7 @@ Hull.define({
     var _ = this.sandbox.util._;
     var btn = this.$el.find('.btn-mini');
     btn.popover({
-      title: 'Add to List',
+      title: this.options.title || 'Add to List',
       html: true,
       placement: 'bottom',
       content: ''
@@ -172,9 +172,12 @@ Hull.define({
   renderPopover: function () {
     "use strict";
     var $popoverContent = this.$el.find('.popover-content');
+    var $popoverTitle = this.$el.find('.popover-title');
     if (!this.loggedIn()) {
       $popoverContent.html(this.renderTemplate('loggedOut'));
+      $popoverTitle.html('To Create a Wish List');
     } else {
+      $popoverTitle.html('Create or Add to a Wish List');
       var contents = this.renderTemplate('header', {
         id: this.id
       });
