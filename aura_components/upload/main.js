@@ -42,6 +42,12 @@ Hull.define(['jquery.fileupload'], {
     ]
   },
 
+  actions: {
+    pickFile: function() {
+      this.$find("input[type='file']").click();
+    }
+  },
+
   uploader_events: [
     'fileuploadadd',
     'fileuploadadded',
