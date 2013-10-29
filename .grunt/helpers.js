@@ -37,16 +37,10 @@ module.exports = function (grunt) {
             encodePaths: true,
             maxOperations: 20
           },
-          prod:{
+          prod: {
             upload:[
               {
-                gzip:  true,
-                src: 'dist/<%= PKG_VERSION %>/**/*',
-                dest: '<%= PKG_VERSION %>',
-                rel: 'dist/<%= PKG_VERSION %>'
-              },
-              {
-                gzip:  false,
+                options: { gzip: true },
                 src: 'dist/<%= PKG_VERSION %>/**/*',
                 dest: '<%= PKG_VERSION %>',
                 rel: 'dist/<%= PKG_VERSION %>'
