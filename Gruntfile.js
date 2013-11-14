@@ -17,7 +17,6 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-coverjs');
   grunt.loadNpmTasks('grunt-plato');
   grunt.loadNpmTasks('grunt-wrap');
-  grunt.loadNpmTasks('grunt-contrib-compress');
 
   var clientConfig = grunt.file.readJSON('.grunt/client.json');
   var remoteConfig = grunt.file.readJSON('.grunt/remote.json');
@@ -144,6 +143,29 @@ module.exports = function (grunt) {
       remote: {
         options: clone(remoteRJSConfig, true)
       },
+      upload: {
+        options: {
+          namespace: 'Hull',
+          paths: {
+            jquery: "empty:",
+            "jquery.ui.widget" : 'bower_components/jquery-file-upload/js/vendor/jquery.ui.widget',
+            "jquery.fileupload" : 'bower_components/jquery-file-upload/js/jquery.fileupload'
+          },
+          include: [
+            'jquery.fileupload'
+          ],
+          out: 'tmp/aura_components/upload/deps/jquery.fileupload.js'
+        }
+      },
+      // registration: {
+      //   options: {
+      //     namespace: 'Hull',
+      //     paths: { h5f: 'aura_components/registration/h5f' },
+      //     shim: { h5f: { exports: 'H5F' } },
+      //     include: ['h5f'],
+      //     out: 'tmp/aura_components/registration/deps.js'
+      //   }
+      // },
       dox: {
         options: {
           namespace: 'Hull',
@@ -242,16 +264,6 @@ module.exports = function (grunt) {
       "widgets": ["version", "hull_widgets"],
       "docs": ['dox', 'cover', 'plato'],
       "describe": ['describe']
-    },
-    compress: {
-      main: {
-        options: {
-          mode: 'gzip'
-        },
-        files: [
-          { expand: true, src: ['dist/**/*.js'] }
-        ]
-      }
     }
   };
 
@@ -265,7 +277,7 @@ module.exports = function (grunt) {
   //These tasks are the only ones needed to be used
   grunt.registerTask('default', 'server');
   grunt.registerTask('server', ['connect', 'test', 'dist:widgets', 'watch']);
-  grunt.registerTask('deploy', ['dist', 'compress', 's3:prod']);
+  grunt.registerTask('deploy', ['dist', 's3:prod']);
 
   require('./.grunt/customTasks')(grunt);
 
