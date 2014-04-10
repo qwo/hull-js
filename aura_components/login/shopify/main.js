@@ -23,6 +23,9 @@ Hull.component({
     this.sandbox.on('hull.shopify.loading.start', this.startLoading, this);
     this.sandbox.on('hull.shopify.loading.stop', this.stopLoading, this);
 
+
+    this.options.cta = this.options.cta || "Sign In";
+
     this.injectLinkTag();
   },
 
@@ -60,8 +63,11 @@ Hull.component({
     data.showLinkIdentity = this.options.showLinkIdentity !== false;
   },
 
-  afterRender: function() {
+  afterRender: function(data) {
     this.$errorContainer = this.$('.hull-error-container');
+    if (Hull.currentUser() && /checkout/.test(document.location.search)) {
+      $('#checkout').click();
+    }
   },
 
   injectLinkTag: function() {

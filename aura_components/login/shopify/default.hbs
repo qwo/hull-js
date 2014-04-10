@@ -7,7 +7,9 @@
 
   <div class="hull-social-container">
     {{#if loggedIn}}
+      {{#unless options.hideSignOut}}
       <a href="#" data-hull-action="_logout">Sign Out</a>
+      {{/unless}}
 
       {{#if showLinkIdentity}}
         {{#each providers}}
@@ -27,7 +29,7 @@
     {{else}}
       {{#each providers}}
         <button class="hull-btn hull-btn-{{@key}}" data-hull-action="_login" data-hull-provider="{{@key}}">
-          <i class="hull-icon hull-icon-{{@key}}"></i> Sign In with {{classify @key}}
+          <i class="hull-icon hull-icon-{{@key}}"></i> {{../options.cta}} with {{classify @key}}
         </button>
       {{/each}}
     {{/if}}
