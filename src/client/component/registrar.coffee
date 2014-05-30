@@ -6,13 +6,10 @@ define ->
 
 
   (_define)->
-    (componentName, componentDef)->
-      unless componentDef
-        componentDef = componentName
-        componentName = null
-      #Validates the name
-      if componentName and not Object.prototype.toString.apply(componentName) == '[object String]'
-        throw 'The component identifier must be a String'
+    ->
+      args = [].slice.call(arguments)
+      componentDef = args.pop()
+      componentName = args.pop()
 
       #Fetch the definition
       componentDef = componentDef() if Object.prototype.toString.apply(componentDef) == '[object Function]'
