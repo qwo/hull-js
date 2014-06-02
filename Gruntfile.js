@@ -249,6 +249,9 @@ module.exports = function (grunt) {
       template: "define(function () { return '<%= PKG_VERSION %>';});",
       dest: 'lib/utils/version.js'
     },
+    hull_auto_components: {
+      dest: 'dist/<%= PKG_VERSION%>'
+    },
     hull_components: {
       options: {
         optimize: !grunt.option('dev')
@@ -257,7 +260,7 @@ module.exports = function (grunt) {
         sourceName: 'hull',
         src: 'aura_components',
         dest: 'dist/<%= PKG_VERSION%>/aura_components'
-      },
+      }
     },
     describe: {
       out: 'dist/<%= PKG_VERSION%>/REVISION'
@@ -295,7 +298,7 @@ module.exports = function (grunt) {
       "api": ['version', 'clean:client', 'coffee:api', 'wrap', 'version', 'requirejs:api', 'uglify:api', 'symlink:current'],
       "client-no-underscore": ['version', 'clean:client', 'coffee:client', 'wrap', 'version', 'requirejs:client-no-underscore'],
       "client-no-backbone": ['version', 'clean:client', 'coffee:client', 'wrap', 'version', 'requirejs:client-no-backbone'],
-      "components": ["version", "hull_components"],
+      "components": ["version", "hull_components", "hull_auto_components"],
       "docs": ['dox'],
       "describe": ['describe']
     }
