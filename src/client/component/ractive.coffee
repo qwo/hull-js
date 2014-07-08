@@ -1,5 +1,4 @@
-define ['underscore', 'lib/client/component/context'], (_, Context)->
-
+define ['lib/client/component/component', 'underscore', 'lib/client/component/context'], (HullComponentModule, _, Context)->
   (app)->
     _invokeBeforeRender = (data, ctx)->
       dfd = app.core.data.deferred()
@@ -11,15 +10,16 @@ define ['underscore', 'lib/client/component/context'], (_, Context)->
         dfd.reject err
       dfd.promise()
 
-    debug = false
-
-    class HullComponent extends app.core.mvc.View
+    class HullRactive extends app.core.mvc.View
+      helpers: {}
+      actions: {}
+      decorators: {}
+      partials: {}
+      computed: {}
+      initialViewData: -> {}
       initialize: ->
-
       isInitialized: false
-
       options: {}
-
       constructor: (options)->
         @ref = options.ref
         @api = @sandbox.data.api
@@ -37,6 +37,7 @@ define ['underscore', 'lib/client/component/context'], (_, Context)->
         @cid = _.uniqueId('view')
         @_configure(options || {})
         @_ensureElement()
+        @ractive = @setupRactive(@$el, "main")
         @invokeWithCallbacks('initialize', options).then _.bind(->
           @delegateEvents()
           @invokeWithCallbacks 'render'
@@ -45,13 +46,6 @@ define ['underscore', 'lib/client/component/context'], (_, Context)->
         , @), (err)->
           console.warn('WARNING', err)
           # Already displays a log in Aura and is caught above
-
-      renderTemplate: (tpl, data)=>
-        _tpl = @_templates?[tpl]
-        if _tpl
-          _tpl data || @, helpers: _.extend {}, @helpers
-        else
-          "Cannot find template '#{tpl}'"
 
       authServices: ()->
         @sandbox.util._.reject @sandbox.util._.keys(@sandbox.config.services.auth || {}), (service)-> service == 'hull'
@@ -84,17 +78,6 @@ define ['underscore', 'lib/client/component/context'], (_, Context)->
         identities.email ?= {} if me.get('main_identity') == 'email'
         identities
 
-      getTemplate: (tpl, data)=>
-        tpl || @template || @templates?[0]
-
-      doRender: (tpl, data)=>
-        tplName = @getTemplate(tpl, data)
-        ret = @renderTemplate(tplName, data)
-        @$el.addClass(this.className)
-        ret = "<!-- START #{tplName} RenderCount: #{@_renderCount} -->#{ret}<!-- END #{tplName}-->" if debug
-        @$el.html(ret)
-        return @
-
       afterRender: (data)=> data
 
       # Call beforeRender
@@ -116,10 +99,32 @@ define ['underscore', 'lib/client/component/context'], (_, Context)->
       emitLifecycleEvent: (name)->
         @sandbox.emit("hull.#{@componentName.replace('/','.')}.#{name}",{cid:@cid})
 
-    module =
-      initialize: (app)->
-        debug = app.config.debug
-        app.components.addType("Hull", HullComponent.prototype)
-      componentClass: HullComponent
+      setupRactive: (node, template)->
+        node.addClass @className
+        _ = @sandbox.util._
+        bindReduction = (memo, val, key)->
+          memo[key] = _.bind val, self
+          memo
+        @actions = _.reduce @actions, bindReduction, {}
+        @helpers = _.reduce @helpers, bindReduction, {}
+        @decorators = _.reduce @decorators, bindReduction, {}
 
-    module
+        ractive = new Ractive
+          el: node
+          template: RactiveTemplates[this.componentName+"/"+template]
+          decorators: @decorators
+          data:
+            helpers: @helpers
+            partials: @partials
+          computed: @computed
+
+        ractive.on @actions
+        ractive.set @initialViewData()
+        ractive
+      # TODO What to do with these .set calls???
+      doRender: (template, data)->
+        _ = @sandbox.util._
+        @ractive.set _.omit(data,"options")
+
+    initialize: (app)->
+      app.components.addType("Ractive", HullRactive.prototype)

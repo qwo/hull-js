@@ -9,7 +9,7 @@ define ['underscore', 'lib/utils/promises', 'aura/aura', 'lib/utils/handlebars',
       app.core.data.hullApi = api
     afterAppStart: (app)->
       _ = app.core.util._
-      sb = app.sandboxes.create();
+      sb = app.sandboxes.create()
       # _.extend(HullDef, sb);
       # After app init, call the queued events
 
@@ -36,6 +36,7 @@ define ['underscore', 'lib/utils/promises', 'aura/aura', 'lib/utils/handlebars',
       .use('lib/client/component/component')
       .use('lib/client/component/templates')
       .use('lib/client/component/datasource')
+      .use('lib/client/component/ractive')
     app.use(ext) for ext in extensions
     app
 

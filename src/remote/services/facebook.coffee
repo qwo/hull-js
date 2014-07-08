@@ -40,6 +40,8 @@ define ['lib/utils/promises', 'underscore'], (promises, _) ->
       trackParams = { ui_request_id: utils?.uuid?() || (new Date()).getTime() }
       trackHandler({ path: "facebook.#{req.path}.open", params: _.extend({}, req.params, trackParams) })
       _.delay ->
+        scTop = $(window.parent).scrollTop
+        console.log(scTop)
         FB.ui prms, (response)->
           
           path = "facebook.#{req.path}."
