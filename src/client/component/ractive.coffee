@@ -10,16 +10,25 @@ define ['lib/client/component/component', 'underscore', 'lib/client/component/co
         dfd.reject err
       dfd.promise()
 
-    class HullRactive extends app.core.mvc.View
+    class HullRactive
+      options: {}
+
+      #
+      # Ractive-specific properties
+      #
+      events: {} # Hull events, eg hull.auth.login
       helpers: {}
-      actions: {}
+      actions: {} # Ractive events, eg <div on-click="doSomething">...</div>
       decorators: {}
       partials: {}
       computed: {}
-      initialViewData: -> {}
+
+      #
+      # User methods
+      #
+      setupObservers: ->
       initialize: ->
-      isInitialized: false
-      options: {}
+
       constructor: (options)->
         @ref = options.ref
         @api = @sandbox.data.api
@@ -32,17 +41,26 @@ define ['lib/client/component/component', 'underscore', 'lib/client/component/co
           @className = "hull-component"
           @className += " hull-#{@namespace}" if @namespace?
 
-        # Copy/Paste + adaptation of the Backbone.View constructor
-        # TODO remove it whenever possible
         @cid = _.uniqueId('view')
-        @_configure(options || {})
-        @_ensureElement()
+        @el = options.el
+        @$el = $ @el
         @ractive = @setupRactive(@$el, "main")
+
+#
+        # Data Helpers
+        #
+        @getData = _.bind(@ractive.get, @ractive)
+        @setData = _.bind(@ractive.set, @ractive)
+        @observeData = _.bind(@ractive.observe, @ractive)
+        @incData = (p, v = 1)=>
+          @ractive.add p, v
+        @decData = (p, v = 1)=>
+          @ractive.subtract p, v
+
         @invokeWithCallbacks('initialize', options).then _.bind(->
-          @delegateEvents()
+          @setupObservers()
           @invokeWithCallbacks 'render'
           @sandbox.on('hull.settings.update', (conf)=> @sandbox.config.services = conf)
-          @sandbox.on(refreshOn, (=> @refresh()), @) for refreshOn in (@refreshEvents || [])
         , @), (err)->
           console.warn('WARNING', err)
           # Already displays a log in Aura and is caught above
@@ -80,10 +98,6 @@ define ['lib/client/component/component', 'underscore', 'lib/client/component/co
 
       afterRender: (data)=> data
 
-      # Call beforeRender
-      # doRender
-      # afterRender
-      # Start nested components...
       render: (tpl, data)=>
         __ctx = new Context()
         @invokeWithCallbacks('buildContext', __ctx).then =>
@@ -91,7 +105,6 @@ define ['lib/client/component/component', 'underscore', 'lib/client/component/co
             @invokeWithCallbacks 'doRender', tpl, data
             _.defer(=> @afterRender.call(@, data))
             _.defer(=> @sandbox.start(@$el, { reset: true }))
-            @isInitialized = true;
             @emitLifecycleEvent('render')
           , (err)=>
             console.error(err.message)
@@ -117,14 +130,10 @@ define ['lib/client/component/component', 'underscore', 'lib/client/component/co
             helpers: @helpers
             partials: @partials
           computed: @computed
-
         ractive.on @actions
-        ractive.set @initialViewData()
         ractive
-      # TODO What to do with these .set calls???
       doRender: (template, data)->
-        _ = @sandbox.util._
-        @ractive.set _.omit(data,"options")
+        @ractive.set data
 
     initialize: (app)->
       app.components.addType("Ractive", HullRactive.prototype)
